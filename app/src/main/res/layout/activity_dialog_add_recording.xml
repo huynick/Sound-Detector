@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name of Recording"
+        android:id="@+id/nameTextView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <EditText
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/nameEditText"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/nameTextView"
+        android:layout_toEndOf="@+id/nameTextView" />
+
+    <com.research.uw.sounddetector.WaveformView
+        android:layout_width="wrap_content"
+        android:layout_height="75dp"
+        android:id="@+id/waveView"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_below="@+id/nameEditText" />
+
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Record"
+        android:id="@+id/recordButton"
+        android:layout_below="@+id/waveView"
+        android:layout_centerHorizontal="true"
+        android:checked="false"
+        android:enabled="false"
+        android:textOff="Record"
+        android:textOn="Stop" />
+
+</RelativeLayout>
