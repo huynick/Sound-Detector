@@ -10,21 +10,19 @@ import android.support.v4.app.DialogFragment;
 import android.view.LayoutInflater;
 
 public class DeleteRecordingDialog extends DialogFragment {
-
-    private Recording recording;
     private int position;
 
     public void setArguments(Bundle bundle) {
         position = bundle.getInt("pos");
     }
 
-    public interface NoticeDialogListener {
+    public interface DeleteRecordingDialogListener {
         public void onDialogPositiveClick(DialogFragment dialog, int position);
         public void onDialogNegativeClick(DialogFragment dialog);
     }
 
     // Use this instance of the interface to deliver action events
-    NoticeDialogListener mListener;
+    DeleteRecordingDialogListener mListener;
 
     // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
     @Override
@@ -33,7 +31,7 @@ public class DeleteRecordingDialog extends DialogFragment {
         // Verify that the host activity implements the callback interface
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
-            mListener = (NoticeDialogListener) activity;
+            mListener = (DeleteRecordingDialogListener) activity;
         } catch (ClassCastException e) {
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(activity.toString()

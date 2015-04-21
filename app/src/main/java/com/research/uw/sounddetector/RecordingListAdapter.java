@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -16,16 +18,19 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class RecordingListAdapter extends ArrayAdapter<Recording> implements DeleteRecordingDialog.NoticeDialogListener {
+public class RecordingListAdapter extends ArrayAdapter<Recording> {
     private ArrayList<Recording> recordings;
     private Context context;
     private FragmentManager fragmentManager;
+    private RecordingTableOpenHelper db;
 
-    public RecordingListAdapter(Context context, int resource, ArrayList<Recording> recordings, FragmentManager fragmentManager) {
-        super(context, resource);
+    public RecordingListAdapter(Context context, int resource, ArrayList<Recording> recordings, RecordingTableOpenHelper db, FragmentManager fragmentManager) {
+        super(context, resource, recordings);
         this.recordings = recordings;
         this.fragmentManager = fragmentManager;
+        this.db = db;
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -40,12 +45,16 @@ public class RecordingListAdapter extends ArrayAdapter<Recording> implements Del
         if(r != null) {
             TextView recordingName = (TextView) v.findViewById(R.id.recordingName);
             recordingName.setText(r.getName());
+        } else {
+            TextView recordingName = (TextView) v.findViewById(R.id.recordingName);
+            recordingName.setText("null");
         }
         Button edit = (Button)v.findViewById(R.id.edit);
         edit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                EditRecordingDialog editDialog = EditRecordingDialog.newInstance(r, db);
+                editDialog.show(fragmentManager, "edit");
             }
         });
         Button remove = (Button)v.findViewById(R.id.remove);
@@ -55,18 +64,11 @@ public class RecordingListAdapter extends ArrayAdapter<Recording> implements Del
                 DeleteRecordingDialog deleteDialog = new DeleteRecordingDialog();
                 Bundle b = new Bundle();
                 b.putInt("pos", pos);
+                deleteDialog.setArguments(b);
                 deleteDialog.show(fragmentManager, "delete");
             }
         });
 
         return v;
     }
-
-    public void onDialogPositiveClick(DialogFragment dialog, int position) {
-        recordings.remove(position);
-    }
-    public void onDialogNegativeClick(DialogFragment dialog) {
-
-    }
-
 }

@@ -18,9 +18,17 @@
     <string name="title_activity_recording_list">RecordingList</string>
     <string name="delete_recording">Delete Recording?</string>
     <string name="delete">delete</string>
+    <string name="add_recording">Add Recording</string>
+    <string name="delete_sound_type">Delete Sound Type?</string>
+    <string name="main_menu_tab">Main Menu</string>
+    <string name="settings_tab">Settings</string>
+    <string name="help_tab">Help</string>
+
     <string-array name="sort_by_array">
         <item>Alphabetical</item>
         <item>By Date</item>
     </string-array>
+
+    <string name="title_activity_settings_screen">SettingsScreen</string>
 
 </resources>

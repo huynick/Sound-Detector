@@ -1,24 +1,34 @@
 package com.research.uw.sounddetector;
 
+import android.app.LoaderManager;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 
-public class RecordingList extends ActionBarActivity {
+public class RecordingList extends ActionBarActivity implements AddRecordingDialog.AddRecordingDialogListener, DeleteRecordingDialog.DeleteRecordingDialogListener, EditRecordingDialog.EditRecordingDialogListener {
     private ListView listView;
     private ArrayList<Recording> currRecordings;
-    private HashMap<String, ArrayList<Recording>> recordingMap;
-    private RecordingListAdapter recordingListAdapter
+    private RecordingListAdapter recordingListAdapter;
+    private RecordingTableOpenHelper mDbHelper;
     private String soundName;
 
 
@@ -26,16 +36,14 @@ public class RecordingList extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recording_list);
+        currRecordings = new ArrayList<Recording>();
+
+        mDbHelper = new RecordingTableOpenHelper(getBaseContext());
 
         Intent i = getIntent();
         soundName = i.getStringExtra("sound name");
         TextView soundNameTextView = (TextView)findViewById(R.id.soundName);
-        soundNameTextView.setText(soundName + "Recordings");
-
-        currRecordings = recordingMap.get(soundName);
-        if(currRecordings == null) {
-            currRecordings = new ArrayList<Recording>();
-        }
+        soundNameTextView.setText(soundName + " Recordings");
 
         Spinner spinner = (Spinner) findViewById(R.id.sortbyspinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.sort_by_array, android.R.layout.simple_spinner_item);
@@ -43,9 +51,55 @@ public class RecordingList extends ActionBarActivity {
         spinner.setAdapter(adapter);
 
         listView = (ListView) findViewById(R.id.recordingList);
-        recordingListAdapter = new RecordingListAdapter(this, android.R.layout.simple_list_item_1, currRecordings, getSupportFragmentManager());
+        recordingListAdapter = new RecordingListAdapter(this, android.R.layout.simple_list_item_1, currRecordings, mDbHelper, getSupportFragmentManager());
         listView.setAdapter(recordingListAdapter);
+        updateCurrRecordings();
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateCurrRecordings();
+    }
+
+    private void updateCurrRecordings() {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        recordingListAdapter.clear();
+
+        // Define a projection that specifies which columns from the database
+        // you will actually use after this query.
+        String[] projection = {
+                RecordingContract.RecordingEntry._ID,
+                RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME,
+                RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME,
+                RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE
+        };
+
+        String selection = RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE + " = ?";
+
+        String[] selectionArgs = {soundName};
+
+        Cursor c = db.query(
+                RecordingContract.RecordingEntry.TABLE_NAME,  // The table to query
+                projection,                               // The columns to return
+                selection,                                // The columns for the WHERE clause
+                selectionArgs,                            // The values for the WHERE clause
+                null,                                     // don't group the rows
+                null,                                     // don't filter by row groups
+                null                                 // The sort order
+        );
+        if(c.moveToFirst()) {
+            Recording r = new Recording(c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME)),
+                    c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME)),
+                    c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE)));
+            recordingListAdapter.add(r);
+        }
+        while(c.moveToNext()) {
+            Recording r = new Recording(c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME)),
+                    c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME)),
+                    c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE)));
+            recordingListAdapter.add(r);
+        }
     }
 
 
@@ -56,9 +110,72 @@ public class RecordingList extends ActionBarActivity {
         return true;
     }
 
-    public void addNewRecording() {
+    public void addNewRecording(View v) {
+        AddRecordingDialog dialog = new AddRecordingDialog();
+        dialog.setSoundType(soundName);
+        dialog.setDb(mDbHelper);
+        dialog.setAutoName(getAutoName());
+        dialog.show(getSupportFragmentManager(), "AddRecording");
+    }
+
+    private String getAutoName() {
+        int min = 0;
+        for(int i = 0; i < currRecordings.size(); i++) {
+            String currName = currRecordings.get(i).getName();
+            if(currName.startsWith(soundName)) {
+                try {
+                    int currNum = Integer.parseInt(currName.substring(soundName.length() + 1));
+                    if(currNum > min) {
+                        min = currNum;
+                    }
+                } catch (NumberFormatException e) {
+
+                } catch (IndexOutOfBoundsException e) {
+
+                }
+            }
+        }
+
+        return soundName + " " + (min + 1);
+    }
+
+    public void onDialogStopClick(DialogFragment dialog, Recording recording) {
+        // Gets the data repository in write mode
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Create a new map of values, where column names are the keys
+        ContentValues values = new ContentValues();
+        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME, recording.getFileName());
+        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME, recording.getName());
+        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE, recording.getSoundType());
+
+        db.insert(
+                RecordingContract.RecordingEntry.TABLE_NAME,
+                null,
+                values);
+        recordingListAdapter.add(recording);
+    }
+
+    public void onDialogPositiveClick(DialogFragment dialog, int position) {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        Recording r = currRecordings.get(position);
+        // Define 'where' part of query.
+        String selection = RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME + " = ?" +
+                "AND " + RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE + " = ?";
+        // Specify arguments in placeholder order.
+        String[] selectionArgs = {r.getName(), r.getSoundType() };
+        db.delete(RecordingContract.RecordingEntry.TABLE_NAME, selection, selectionArgs);
+        recordingListAdapter.remove(currRecordings.get(position));
+    }
+    public void onDialogNegativeClick(DialogFragment dialog) {
 
     }
+
+    @Override
+    public void onDialogStopClick(DialogFragment dialog) {
+        updateCurrRecordings();
+    }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -73,5 +190,23 @@ public class RecordingList extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public boolean help(MenuItem item) {
+        HelpDialog dialog = new HelpDialog();
+        dialog.show(getSupportFragmentManager(), "HelpDialog");
+        return true;
+    }
+
+    public boolean settingsMenu(MenuItem item) {
+        Intent i = new Intent(getApplicationContext(), SettingsScreen.class);
+        startActivity(i);
+        return true;
+    }
+
+    public boolean mainMenu(MenuItem item) {
+        Intent i = new Intent(getApplicationContext(), MainScreen.class);
+        startActivity(i);
+        return true;
     }
 }

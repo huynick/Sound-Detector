@@ -2,23 +2,18 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:theme="@style/MyTheme"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainScreen"
     android:id="@+id/main">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Sound Detector"
-        android:id="@+id/title"
-        android:gravity="center"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:minHeight="?attr/actionBarSize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </android.support.v7.widget.Toolbar>
 
     <TextView
         android:layout_width="wrap_content"
@@ -26,7 +21,7 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="This is the Sound Detector App. Click on ON/OFF button to start/stop the service."
         android:id="@+id/Description"
-        android:layout_below="@+id/title"
+        android:layout_below="@+id/toolbar"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
@@ -151,8 +146,19 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
+                android:text="Quick Add"
+                android:id="@+id/quickAdd"
+                android:onClick="addQuickRecording"
+                android:layout_gravity="center_vertical"
+                android:background="#ffffffff"
+                android:layout_weight="1"
+                android:layout_margin="2dp"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
                 android:text="Manage Recordings"
-                android:layout_weight="3"
+                android:layout_weight="1"
                 android:onClick="manageRecordings"
                 android:id="@+id/options"
                 android:background="#ffffffff"

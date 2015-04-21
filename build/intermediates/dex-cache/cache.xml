@@ -16,6 +16,13 @@
         <dex dex="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\build\intermediates\pre-dexed\debug\internal_impl-21.0.3-45478b268b693cdda8df873e72e90d005a060d50.jar" />
     </item>
     <item
+        jar="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\21.0.3\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="81d42bf983a8741f4888a6e333e454e4a5e0eeb7">
+        <dex dex="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\build\intermediates\pre-dexed\debug\classes-584fa9d30d09447efea1a27231dc9d51ddac6682.jar" />
+    </item>
+    <item
         jar="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\build\intermediates\exploded-aar\com.android.support\support-v4\21.0.3\classes.jar"
         jumboMode="false"
         revision="21.1.2"
@@ -23,11 +30,25 @@
         <dex dex="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\build\intermediates\pre-dexed\debug\classes-b325feb2ca2c50c8140ab5cdbee43dc9a000dcca.jar" />
     </item>
     <item
-        jar="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\21.0.3\classes.jar"
+        jar="C:\Users\Nicholas\.gradle\caches\modules-2\files-2.1\com.parse.bolts\bolts-android\1.2.0\6ee2953ccf51ce72b6d548c30c4633b99eb4f9dd\bolts-android-1.2.0.jar"
         jumboMode="false"
         revision="21.1.2"
-        sha1="81d42bf983a8741f4888a6e333e454e4a5e0eeb7">
-        <dex dex="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\build\intermediates\pre-dexed\debug\classes-584fa9d30d09447efea1a27231dc9d51ddac6682.jar" />
+        sha1="6ee2953ccf51ce72b6d548c30c4633b99eb4f9dd">
+        <dex dex="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\build\intermediates\pre-dexed\debug\bolts-android-1.2.0-070e71122ac4056e8c11d8b0a01dc82e65f3d1ef.jar" />
+    </item>
+    <item
+        jar="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\libs\Parse-1.9.1.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="1b065010f3c9d441ede9078aca8eabcd1c81e647">
+        <dex dex="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\build\intermediates\pre-dexed\debug\Parse-1.9.1-454fbeb08c31cbdf2f0d569acb8aafa7586928cc.jar" />
+    </item>
+    <item
+        jar="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\build\intermediates\exploded-aar\com.google.android.gms\play-services\3.1.59\classes.jar"
+        jumboMode="false"
+        revision="21.1.2"
+        sha1="2dd7b1a9ea65bb03d9cd16df777eeaf537a1fc81">
+        <dex dex="C:\Users\Nicholas\AndroidStudioProjects\SoundDetector\app\build\intermediates\pre-dexed\debug\classes-e8bca3e26668e0d75e3a8cb9f9bcd2a7e75e789e.jar" />
     </item>
 
 </items>
