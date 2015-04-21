@@ -1,5 +1,7 @@
 package com.research.uw.sounddetector;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +14,8 @@ import android.media.AudioFormat;
 import android.media.MediaRecorder;
 import android.os.AsyncTask;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -24,6 +28,7 @@ import android.widget.ToggleButton;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.AudioManager;
+import android.os.Vibrator;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -46,31 +51,6 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     private int bufferSize;
 
     private short[] mAudioBuffer;
-
-//    // Variables for registering to GCM
-//
-//    public static final String EXTRA_MESSAGE = "message";
-//    public static final String PROPERTY_REG_ID = "registration_id";
-//    private static final String PROPERTY_APP_VERSION = "appVersion";
-//    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
-//
-//    /**
-//     * Substitute you own sender ID here. This is the project number you got
-//     * from the API Console, as described in "Getting Started."
-//     */
-//    String SENDER_ID = "AIzaSyCUIX66b7oXKbEW0lGH9-K6wsDTGJBCQR4";
-//
-//    /**
-//     * Tag used on log messages.
-//     */
-//    static final String TAG = "GCMDemo";
-//
-//    GoogleCloudMessaging gcm;
-//    AtomicInteger msgId = new AtomicInteger();
-//    SharedPreferences prefs;
-//    Context context;
-//
-//    String regid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,221 +81,6 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     protected void onResume() {
         super.onResume();
     }
-
-//    /**
-//     * Check the device to make sure it has the Google Play Services APK. If
-//     * it doesn't, display a dialog that allows users to download the APK from
-//     * the Google Play Store or enable it in the device's system settings.
-//     */
-//    private boolean checkPlayServices() {
-//        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-//        if (resultCode != ConnectionResult.SUCCESS) {
-//            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-//                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
-//                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-//            } else {
-//                Log.i(TAG, "This device is not supported.");
-//                finish();
-//            }
-//            return false;
-//        }
-//        return true;
-//    }
-//
-//    /**
-//     * Gets the current registration ID for application on GCM service.
-//     * <p>
-//     * If result is empty, the app needs to register.
-//     *
-//     * @return registration ID, or empty string if there is no existing
-//     *         registration ID.
-//     */
-//    private String getRegistrationId(Context context) {
-//        final SharedPreferences prefs = getGCMPreferences(context);
-//        String registrationId = prefs.getString(PROPERTY_REG_ID, "");
-//        if (registrationId.isEmpty()) {
-//            Log.i(TAG, "Registration not found.");
-//            return "";
-//        }
-//        // Check if app was updated; if so, it must clear the registration ID
-//        // since the existing registration ID is not guaranteed to work with
-//        // the new app version.
-//        int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
-//        int currentVersion = getAppVersion(context);
-//        if (registeredVersion != currentVersion) {
-//            Log.i(TAG, "App version changed.");
-//            return "";
-//        }
-//        return registrationId;
-//    }
-//
-//    /**
-//     * @return Application's {@code SharedPreferences}.
-//     */
-//    private SharedPreferences getGCMPreferences(Context context) {
-//        // This sample app persists the registration ID in shared preferences, but
-//        // how you store the registration ID in your app is up to you.
-//        return getSharedPreferences(MainScreen.class.getSimpleName(),
-//                Context.MODE_PRIVATE);
-//    }
-//
-//    /**
-//     * @return Application's version code from the {@code PackageManager}.
-//     */
-//    private static int getAppVersion(Context context) {
-//        try {
-//            PackageInfo packageInfo = context.getPackageManager()
-//                    .getPackageInfo(context.getPackageName(), 0);
-//            return packageInfo.versionCode;
-//        } catch (PackageManager.NameNotFoundException e) {
-//            // should never happen
-//            throw new RuntimeException("Could not get package name: " + e);
-//        }
-//    }
-//
-//    /**
-//     * Registers the application with GCM servers asynchronously.
-//     * <p>
-//     * Stores the registration ID and app versionCode in the application's
-//     * shared preferences.
-//     */
-//    private void registerInBackground() {
-//
-//    }
-//
-//    /**
-//     * Sends the registration ID to your server over HTTP, so it can use GCM/HTTP
-//     * or CCS to send messages to your app. Not needed for this demo since the
-//     * device sends upstream messages to a server that echoes back the message
-//     * using the 'from' address in the message.
-//     */
-//    private void sendRegistrationIdToBackend() {
-//        //TODO: If this is actually needed
-//    }
-//
-//    /**
-//     * Stores the registration ID and app versionCode in the application's
-//     * {@code SharedPreferences}.
-//     *
-//     * @param context application's context.
-//     * @param regId registration ID
-//     */
-//    private void storeRegistrationId(Context context, String regId) {
-//        final SharedPreferences prefs = getGCMPreferences(context);
-//        int appVersion = getAppVersion(context);
-//        Log.i(TAG, "Saving regId on app version " + appVersion);
-//        SharedPreferences.Editor editor = prefs.edit();
-//        editor.putString(PROPERTY_REG_ID, regId);
-//        editor.putInt(PROPERTY_APP_VERSION, appVersion);
-//        editor.commit();
-//    } /**
-//     * Check the device to make sure it has the Google Play Services APK. If
-//     * it doesn't, display a dialog that allows users to download the APK from
-//     * the Google Play Store or enable it in the device's system settings.
-//     */
-//    private boolean checkPlayServices() {
-//        int resultCode = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
-//        if (resultCode != ConnectionResult.SUCCESS) {
-//            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-//                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
-//                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-//            } else {
-//                Log.i(TAG, "This device is not supported.");
-//                finish();
-//            }
-//            return false;
-//        }
-//        return true;
-//    }
-//
-//    /**
-//     * Gets the current registration ID for application on GCM service.
-//     * <p>
-//     * If result is empty, the app needs to register.
-//     *
-//     * @return registration ID, or empty string if there is no existing
-//     *         registration ID.
-//     */
-//    private String getRegistrationId(Context context) {
-//        final SharedPreferences prefs = getGCMPreferences(context);
-//        String registrationId = prefs.getString(PROPERTY_REG_ID, "");
-//        if (registrationId.isEmpty()) {
-//            Log.i(TAG, "Registration not found.");
-//            return "";
-//        }
-//        // Check if app was updated; if so, it must clear the registration ID
-//        // since the existing registration ID is not guaranteed to work with
-//        // the new app version.
-//        int registeredVersion = prefs.getInt(PROPERTY_APP_VERSION, Integer.MIN_VALUE);
-//        int currentVersion = getAppVersion(context);
-//        if (registeredVersion != currentVersion) {
-//            Log.i(TAG, "App version changed.");
-//            return "";
-//        }
-//        return registrationId;
-//    }
-//
-//    /**
-//     * @return Application's {@code SharedPreferences}.
-//     */
-//    private SharedPreferences getGCMPreferences(Context context) {
-//        // This sample app persists the registration ID in shared preferences, but
-//        // how you store the registration ID in your app is up to you.
-//        return getSharedPreferences(MainScreen.class.getSimpleName(),
-//                Context.MODE_PRIVATE);
-//    }
-//
-//    /**
-//     * @return Application's version code from the {@code PackageManager}.
-//     */
-//    private static int getAppVersion(Context context) {
-//        try {
-//            PackageInfo packageInfo = context.getPackageManager()
-//                    .getPackageInfo(context.getPackageName(), 0);
-//            return packageInfo.versionCode;
-//        } catch (PackageManager.NameNotFoundException e) {
-//            // should never happen
-//            throw new RuntimeException("Could not get package name: " + e);
-//        }
-//    }
-//
-//    /**
-//     * Registers the application with GCM servers asynchronously.
-//     * <p>
-//     * Stores the registration ID and app versionCode in the application's
-//     * shared preferences.
-//     */
-//    private void registerInBackground() {
-//
-//    }
-//
-//    /**
-//     * Sends the registration ID to your server over HTTP, so it can use GCM/HTTP
-//     * or CCS to send messages to your app. Not needed for this demo since the
-//     * device sends upstream messages to a server that echoes back the message
-//     * using the 'from' address in the message.
-//     */
-//    private void sendRegistrationIdToBackend() {
-//        //TODO: If this is actually needed
-//    }
-//
-//    /**
-//     * Stores the registration ID and app versionCode in the application's
-//     * {@code SharedPreferences}.
-//     *
-//     * @param context application's context.
-//     * @param regId registration ID
-//     */
-//    private void storeRegistrationId(Context context, String regId) {
-//        final SharedPreferences prefs = getGCMPreferences(context);
-//        int appVersion = getAppVersion(context);
-//        Log.i(TAG, "Saving regId on app version " + appVersion);
-//        SharedPreferences.Editor editor = prefs.edit();
-//        editor.putString(PROPERTY_REG_ID, regId);
-//        editor.putInt(PROPERTY_APP_VERSION, appVersion);
-//        editor.commit();
-//    }
-
 
 
 
@@ -513,6 +278,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
 
             while (shouldContinue()) {
                 record.read(mAudioBuffer, 0, bufferSize);
+                analyzeAndNotify(mAudioBuffer);
                 waveView.updateAudioData(mAudioBuffer);
             }
 
@@ -533,6 +299,52 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         public synchronized void stopRunning() {
             mShouldContinue = false;
         }
+    }
+
+    private void analyzeAndNotify(short[] mAudioBuffer) {
+        int sum = 0;
+        for (int j = 0; j < mAudioBuffer.length; j++) {
+            sum += Math.abs(mAudioBuffer[j]);
+        }
+        sum = sum / mAudioBuffer.length;
+        int mId = 0;
+        if (sum > 2000.0f) {
+            notify("Too loud!");
+        }
+    }
+
+    private void notify(String text) {
+        int mId = 0;
+        Vibrator v = (Vibrator) this.getSystemService(Context.VIBRATOR_SERVICE);
+        // Vibrate for 500 milliseconds
+        v.vibrate(500);
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_launcher)
+                        .setContentTitle("Sound Detector")
+                        .setContentText("Too loud!");
+        // Creates an explicit intent for an Activity in your app
+        Intent resultIntent = new Intent(this, MainScreen.class);
+
+        // The stack builder object will contain an artificial back stack for the
+        // started Activity.
+        // This ensures that navigating backward from the Activity leads out of
+        // your application to the Home screen.
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        // Adds the back stack for the Intent (but not the Intent itself)
+        stackBuilder.addParentStack(MainScreen.class);
+        // Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(resultPendingIntent);
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // mId allows you to update the notification later on.
+        mNotificationManager.notify(mId, mBuilder.build());
     }
 }
 
