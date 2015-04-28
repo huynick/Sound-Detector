@@ -37,6 +37,7 @@ import com.parse.Parse;
 import com.parse.ParseInstallation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -49,7 +50,8 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     private RecordingTableOpenHelper mDbHelper;
 
     private int bufferSize;
-
+    private ArrayList<short[]> bufferList;
+    private int MAX_BUFFER_SIZE = 15;
     private short[] mAudioBuffer;
 
     @Override
@@ -140,6 +142,17 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         if(recordingThread == null) {
             recordingThread = new RecordingThread();
             recordingThread.start();
+        }
+    }
+
+    public void meterOff(View view) {
+        ToggleButton on = (ToggleButton)findViewById(R.id.MeterOn);
+        ToggleButton off = (ToggleButton)findViewById(R.id.MeterOff);
+        on.setChecked(false);
+        off.setChecked(true);
+        if(recordingThread != null) {
+            recordingThread.stopRunning();
+            recordingThread = null;
         }
     }
 
@@ -278,6 +291,10 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
 
             while (shouldContinue()) {
                 record.read(mAudioBuffer, 0, bufferSize);
+                if(bufferList.size() >= MAX_BUFFER_SIZE) {
+                    bufferList.remove(0);
+                }
+                bufferList.add(mAudioBuffer);
                 analyzeAndNotify(mAudioBuffer);
                 waveView.updateAudioData(mAudioBuffer);
             }

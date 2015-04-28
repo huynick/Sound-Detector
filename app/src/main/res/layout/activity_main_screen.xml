@@ -31,7 +31,8 @@
         android:background="#ff000000"
         android:layout_below="@+id/Description"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:id="@+id/bodyLayout">
 
         <TextView
             android:layout_width="wrap_content"
@@ -71,99 +72,109 @@
             </ToggleButton>
         </LinearLayout>
 
-        <com.research.uw.sounddetector.WaveformView
-            android:layout_width="wrap_content"
-            android:layout_height="75dp"
-            android:id="@+id/waveView"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:layout_below="@+id/serviceButtons" />
-
-
-        <TextView
+        <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text=":: METER ::"
-            android:id="@+id/meter"
-            android:textColor="#ffffffff"
-            android:layout_weight="1"
-            android:layout_below="@+id/waveView"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentStart="true"
-            android:gravity="center" />
-
-        <LinearLayout
-            android:id="@+id/LinearLayout03"
-            android:layout_height="wrap_content"
-            android:layout_width="fill_parent"
-            android:layout_below="@+id/meter"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true">
-            <ToggleButton
-                android:id="@+id/MeterOn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="ON"
-                android:onClick="meterOn"
-                android:textOff="ON"
-                android:textOn="ON">
-            </ToggleButton>
-            <ToggleButton
-                android:id="@+id/MeterOff"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="OFF"
-                android:onClick="meterOff"
-                android:textOff="OFF"
-                android:textOn="OFF">
-            </ToggleButton>
-        </LinearLayout>
-
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_below="@+id/LinearLayout03"
+            android:background="#ff000000"
+            android:layout_below="@+id/serviceButtons"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:id="@+id/dialogues">
+            android:id="@+id/waveLayout"
+            android:orientation="vertical">
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+            <com.research.uw.sounddetector.WaveformView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/waveView"
                 android:layout_weight="1"
-                android:text="Help"
-                android:id="@+id/help"
-                android:onClick="help"
-                android:background="#ffffffff"
-                android:layout_margin="2dp"/>
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"/>
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="Quick Add"
-                android:id="@+id/quickAdd"
-                android:onClick="addQuickRecording"
-                android:layout_gravity="center_vertical"
-                android:background="#ffffffff"
-                android:layout_weight="1"
-                android:layout_margin="2dp"/>
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text=":: METER ::"
+                android:id="@+id/meter"
+                android:textColor="#ffffffff"
+                android:layout_below="@+id/waveView"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentStart="true"
+                android:gravity="center" />
 
-            <Button
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:text="Manage Recordings"
-                android:layout_weight="1"
-                android:onClick="manageRecordings"
-                android:id="@+id/options"
-                android:background="#ffffffff"
-                android:layout_margin="2dp"/>
+            <LinearLayout
+                android:id="@+id/LinearLayout03"
+                android:layout_height="wrap_content"
+                android:layout_width="fill_parent"
+                android:layout_below="@+id/meter"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                >
+                <ToggleButton
+                    android:id="@+id/MeterOn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="ON"
+                    android:onClick="meterOn"
+                    android:textOff="ON"
+                    android:textOn="ON">
+                </ToggleButton>
+                <ToggleButton
+                    android:id="@+id/MeterOff"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="OFF"
+                    android:onClick="meterOff"
+                    android:textOff="OFF"
+                    android:textOn="OFF">
+                </ToggleButton>
+            </LinearLayout>
 
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/LinearLayout03"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:id="@+id/dialogues">
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="1"
+                    android:text="Help"
+                    android:id="@+id/help"
+                    android:onClick="help"
+                    android:background="#ffffffff"
+                    android:layout_margin="2dp"/>
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:text="Quick Add"
+                    android:id="@+id/quickAdd"
+                    android:onClick="addQuickRecording"
+                    android:layout_gravity="center_vertical"
+                    android:background="#ffffffff"
+                    android:layout_weight="1"
+                    android:layout_margin="2dp"/>
+
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="fill_parent"
+                    android:text="Manage Recordings"
+                    android:layout_weight="1"
+                    android:onClick="manageRecordings"
+                    android:id="@+id/options"
+                    android:background="#ffffffff"
+                    android:layout_margin="2dp"/>
+
+            </LinearLayout>
         </LinearLayout>
     </RelativeLayout>
 </RelativeLayout>
