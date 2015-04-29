@@ -1,3 +1,9 @@
 .gradle/2.2.1
 .gradle/2.2.1/taskArtifacts/cache.properties.lock
-.idea/workspace.xml
+.idea
+backend/backend.iml
+build/intermediates/dex-cache/cache.xml
+build/intermediates/model_data.bin
+local.properties
+SoundDetector.iml
+app/app.iml
