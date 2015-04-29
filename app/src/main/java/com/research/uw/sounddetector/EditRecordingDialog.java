@@ -212,20 +212,25 @@ public class EditRecordingDialog extends DialogFragment {
 
 
         int minBufferSize = AudioTrack.getMinBufferSize(44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        int bufferSize = 512;
+        if (minBufferSize < 44100) {
+            minBufferSize = 44100;
+        }
         AudioTrack at = new AudioTrack(AudioManager.STREAM_MUSIC, 44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM);
         String filepath = recording.getFileName();
 
         int i = 0;
-        byte[] s = new byte[bufferSize];
+        byte[] s = new byte[minBufferSize];
         try {
             FileInputStream fin = new FileInputStream(filepath);
             DataInputStream dis = new DataInputStream(fin);
 
             at.play();
-            while((i = dis.read(s, 0, bufferSize)) > -1){
+            int dataPlayed = 0;
+            while((i = dis.read(s, 0, minBufferSize)) > -1){
                 at.write(s, 0, i);
+                dataPlayed += i;
             }
+            System.out.println(dataPlayed);
             at.stop();
             at.release();
             dis.close();

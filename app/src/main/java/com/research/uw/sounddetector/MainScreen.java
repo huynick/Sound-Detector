@@ -69,12 +69,12 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         waveHolder = waveView.getHolder();
         mAudioBuffer = new short[bufferSize];
         mDbHelper = new RecordingTableOpenHelper(getBaseContext());
+        bufferList = new ArrayList<short[]>();
 
         //Instantiate Action Bar
         // Set a toolbar to replace the action bar.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        Parse.initialize(this.getBaseContext(), "8Dnotr5GlTj7YebZstzzrxcbCSzmHcF1sOVGredV", "yqljM1Je0Bg42YZwiqQeRaLlbHzt5uTlnYXECuI4");
         ParseInstallation.getCurrentInstallation().saveInBackground();
     }
 
