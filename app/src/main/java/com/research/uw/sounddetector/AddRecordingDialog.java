@@ -224,44 +224,44 @@ public class AddRecordingDialog extends DialogFragment {
 
         @Override
         public void run() {
-//            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
-//
-//            AudioRecord record = new AudioRecord(MediaRecorder.AudioSource.MIC, AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM),
-//            AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
-//            ArrayList<Byte> audioBytes = new ArrayList<Byte>();
-//
-//            record.startRecording();
-//            Time time = new Time();   time.setToNow();
-//            Log.d("TIME TEST", Long.toString(time.toMillis(false)));
-//            FileOutputStream os = null;
-//            try {
-//                os = new FileOutputStream(mFileName);
-//            } catch (FileNotFoundException e) {
-//                e.printStackTrace();
-//            }
-//
-//            while (shouldContinue()) {
-//                record.read(mAudioBuffer, 0, bufferSize);
-//                int read = record.read(byteBuffer, 0, bufferSize);
-//                System.out.println("read: " + read);
-//                waveView.updateAudioData(mAudioBuffer);
-//                try {
-//                    if (os != null) {
-//                        os.write(byteBuffer, 0, bufferSize);
-//                        dataRecorded += bufferSize;
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//
-//            //writeWavHeader();
-//            System.out.println(dataRecorded);
-//            time.setToNow();
-//            Log.d("TIME TEST", Long.toString(time.toMillis(false)));
-//
-//            record.stop();
-//            record.release();
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
+
+            AudioRecord record = new AudioRecord(MediaRecorder.AudioSource.MIC, AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM),
+            AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+            ArrayList<Byte> audioBytes = new ArrayList<Byte>();
+
+            record.startRecording();
+            Time time = new Time();   time.setToNow();
+            Log.d("TIME TEST", Long.toString(time.toMillis(false)));
+            FileOutputStream os = null;
+            try {
+                os = new FileOutputStream(mFileName);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            while (shouldContinue()) {
+                record.read(mAudioBuffer, 0, bufferSize);
+                int read = record.read(byteBuffer, 0, bufferSize);
+                System.out.println("read: " + read);
+                waveView.updateAudioData(mAudioBuffer);
+                try {
+                    if (os != null) {
+                        os.write(byteBuffer, 0, bufferSize);
+                        dataRecorded += bufferSize;
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            //writeWavHeader();
+            System.out.println(dataRecorded);
+            time.setToNow();
+            Log.d("TIME TEST", Long.toString(time.toMillis(false)));
+
+            record.stop();
+            record.release();
 //            loopback();
         }
 
