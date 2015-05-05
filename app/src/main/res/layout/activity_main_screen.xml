@@ -14,68 +14,91 @@
         android:layout_height="wrap_content">
     </android.support.v7.widget.Toolbar>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="This is the Sound Detector App. Click on ON/OFF button to start/stop the service."
-        android:id="@+id/Description"
-        android:layout_below="@+id/toolbar"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:background="#ff000000"
-        android:layout_below="@+id/Description"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:id="@+id/bodyLayout">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text=":: SERVICE ::"
-            android:id="@+id/service"
-            android:layout_centerHorizontal="true"
-            android:textColor="#ffffffff" />
+        android:id="@+id/bodyLayout"
+        android:layout_below="@+id/toolbar">
 
         <LinearLayout
-            android:id="@+id/serviceButtons"
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:id="@+id/listenerLayout">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="LISTENER"
+                android:id="@+id/listenerText"
+                android:textColor="#ffffffff"
+                 />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                />
+
+            <Switch
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/listenerSwitch"
+                android:textOn="ON"
+                android:textOff="OFF"
+                android:onClick="listenerOn"
+                android:textColorHighlight="#ffffffff" />
+        </LinearLayout>
+
+        <View
+            android:layout_below="@+id/listenerLayout"
+            android:layout_height="5dp"
+            android:layout_width="fill_parent"
+            android:background="#ffffffff"
+            android:id="@+id/whiteBorder"
+            />
+
+        <LinearLayout
+            android:id="@+id/displayLayout"
             android:layout_height="wrap_content"
             android:layout_width="fill_parent"
-            android:layout_below="@+id/service"
+            android:layout_below="@+id/whiteBorder"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true">
-            <ToggleButton
-                android:id="@+id/ServiceOn"
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="DISPLAY"
+                android:id="@+id/displayText"
+                android:textColor="#ffffffff" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
                 android:layout_weight="1"
-                android:text="ON"
-                android:onClick="serviceOn"
-                android:textOff="ON"
-                android:textOn="ON">
-            </ToggleButton>
-            <ToggleButton
-                android:id="@+id/ServiceOff"
+                />
+
+            <Switch
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="OFF"
-                android:onClick="serviceOff"
+                android:id="@+id/displaySwitch"
+                android:onClick="displayOn"
+                android:textOn="ON"
                 android:textOff="OFF"
-                android:textOn="OFF">
-            </ToggleButton>
+                android:textColor="#ffffffff" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="#ff000000"
-            android:layout_below="@+id/serviceButtons"
+            android:layout_below="@+id/displayLayout"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
             android:id="@+id/waveLayout"
@@ -90,48 +113,6 @@
                 android:layout_alignParentStart="true"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"/>
-
-            <TextView
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:text=":: METER ::"
-                android:id="@+id/meter"
-                android:textColor="#ffffffff"
-                android:layout_below="@+id/waveView"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentStart="true"
-                android:gravity="center" />
-
-            <LinearLayout
-                android:id="@+id/LinearLayout03"
-                android:layout_height="wrap_content"
-                android:layout_width="fill_parent"
-                android:layout_below="@+id/meter"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentStart="true"
-                >
-                <ToggleButton
-                    android:id="@+id/MeterOn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="ON"
-                    android:onClick="meterOn"
-                    android:textOff="ON"
-                    android:textOn="ON">
-                </ToggleButton>
-                <ToggleButton
-                    android:id="@+id/MeterOff"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="OFF"
-                    android:onClick="meterOff"
-                    android:textOff="OFF"
-                    android:textOn="OFF">
-                </ToggleButton>
-            </LinearLayout>
 
             <LinearLayout
                 android:orientation="horizontal"
@@ -166,7 +147,7 @@
                 <Button
                     android:layout_width="wrap_content"
                     android:layout_height="fill_parent"
-                    android:text="Manage Recordings"
+                    android:text="Sound Categories"
                     android:layout_weight="1"
                     android:onClick="manageRecordings"
                     android:id="@+id/options"
@@ -175,5 +156,16 @@
 
             </LinearLayout>
         </LinearLayout>
+
     </RelativeLayout>
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinner"
+        android:layout_centerVertical="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="306dp"
+        android:layout_marginStart="306dp" />
 </RelativeLayout>

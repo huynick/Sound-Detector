@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -42,18 +43,25 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
 
         Intent i = getIntent();
         soundName = i.getStringExtra("sound name");
-        TextView soundNameTextView = (TextView)findViewById(R.id.soundName);
-        soundNameTextView.setText(soundName + " Recordings");
 
         Spinner spinner = (Spinner) findViewById(R.id.sortbyspinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.sort_by_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
+        //Set Sort by to invisible:
+        spinner.setVisibility(View.GONE);
+        findViewById(R.id.sortbytext).setVisibility(View.GONE);
 
         listView = (ListView) findViewById(R.id.recordingList);
         recordingListAdapter = new RecordingListAdapter(this, android.R.layout.simple_list_item_1, currRecordings, mDbHelper, getSupportFragmentManager());
         listView.setAdapter(recordingListAdapter);
         updateCurrRecordings();
+
+        //Instantiate Action Bar
+        // Set a toolbar to replace the action bar.
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(soundName + " Recordings");
+        setSupportActionBar(toolbar);
     }
 
     @Override

@@ -24,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.widget.Switch;
 import android.widget.ToggleButton;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
@@ -49,7 +50,11 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     private RecordingThread recordingThread;
     private RecordingTableOpenHelper mDbHelper;
 
-    private int bufferSize;
+    private boolean recording;
+    private boolean display;
+    private boolean listener;
+
+    private int bufferSize, sampleRate, channelMode, encodingMode;
     private ArrayList<short[]> bufferList;
     private int MAX_BUFFER_SIZE = 15;
     private short[] mAudioBuffer;
@@ -58,13 +63,14 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
-        ToggleButton off = (ToggleButton)findViewById(R.id.ServiceOff);
-        off.setChecked(true);
-        int sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM);
-        int channelMode = AudioFormat.CHANNEL_IN_MONO;
-        int encodingMode = AudioFormat.ENCODING_PCM_16BIT;
+        Switch listener = (Switch)findViewById(R.id.listenerSwitch);
+        listener.setChecked(false);
+        Switch display = (Switch) findViewById(R.id.displaySwitch);
+        display.setChecked(false);
+        sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM);
+        channelMode = AudioFormat.CHANNEL_IN_MONO;
+        encodingMode = AudioFormat.ENCODING_PCM_16BIT;
         bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelMode, encodingMode);
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelMode, encodingMode, bufferSize);
         waveView = (WaveformView) findViewById(R.id.waveView);
         waveHolder = waveView.getHolder();
         mAudioBuffer = new short[bufferSize];
@@ -117,53 +123,63 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         return super.onOptionsItemSelected(item);
     }
 
-    public void serviceOn(View view) {
-        ToggleButton on = (ToggleButton)findViewById(R.id.ServiceOn);
-        ToggleButton off = (ToggleButton)findViewById(R.id.ServiceOff);
-        on.setChecked(true);
-        off.setChecked(false);
-        recorder.startRecording();
-
-    }
-
-    public void serviceOff(View view) {
-        ToggleButton on = (ToggleButton)findViewById(R.id.ServiceOn);
-        ToggleButton off = (ToggleButton)findViewById(R.id.ServiceOff);
-        on.setChecked(false);
-        off.setChecked(true);
-        recorder.stop();
-    }
-
-    public void meterOn(View view) {
-        ToggleButton on = (ToggleButton)findViewById(R.id.MeterOn);
-        ToggleButton off = (ToggleButton)findViewById(R.id.MeterOff);
-        on.setChecked(true);
-        off.setChecked(false);
-        if(recordingThread == null) {
-            recordingThread = new RecordingThread();
-            recordingThread.start();
+    public void displayOn(View view) {
+        Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
+        if (displaySwitch.isChecked()) {
+            display = true;
+            if (!recording) {
+                if (recorder == null) {
+                    recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelMode, encodingMode, bufferSize);
+                    recorder.startRecording();
+                }
+                recording = true;
+            }
+            if (recordingThread == null) {
+                recordingThread = new RecordingThread();
+                recordingThread.start();
+            }
+        } else {
+            if (recordingThread != null) {
+                recordingThread.stopRunning();
+                recordingThread = null;
+            }
+            display = false;
+            if (recording) {
+                if (!listener) {
+                    if (recorder != null) {
+                        recorder.stop();
+                        recorder.release();
+                        recorder = null;
+                    }
+                    recording = false;
+                }
+            }
         }
     }
 
-    public void meterOff(View view) {
-        ToggleButton on = (ToggleButton)findViewById(R.id.MeterOn);
-        ToggleButton off = (ToggleButton)findViewById(R.id.MeterOff);
-        on.setChecked(false);
-        off.setChecked(true);
-        if(recordingThread != null) {
-            recordingThread.stopRunning();
-            recordingThread = null;
-        }
-    }
-
-    public void meterOff() {
-        ToggleButton on = (ToggleButton)findViewById(R.id.MeterOn);
-        ToggleButton off = (ToggleButton)findViewById(R.id.MeterOff);
-        on.setChecked(false);
-        off.setChecked(true);
-        if(recordingThread != null) {
-            recordingThread.stopRunning();
-            recordingThread = null;
+    public void listenerOn(View view) {
+        Switch listenerSwitch = (Switch) findViewById(R.id.listenerSwitch);
+        if (listenerSwitch.isChecked()) {
+            listener = true;
+            if (!recording) {
+                if (recorder == null) {
+                    recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, sampleRate, channelMode, encodingMode, bufferSize);
+                    recorder.startRecording();
+                }
+                recording = true;
+            }
+        } else {
+            listener = false;
+            if (recording) {
+                if (!display) {
+                    if (recorder != null) {
+                        recorder.stop();
+                        recorder.release();
+                        recorder = null;
+                    }
+                    recording = false;
+                }
+            }
         }
     }
 
@@ -183,14 +199,28 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     }
 
     public boolean settingsMenu(MenuItem item) {
-        meterOff();
         Intent i = new Intent(getApplicationContext(), SettingsScreen.class);
         startActivity(i);
         return true;
     }
 
+    public void stopRecording() {
+        Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
+        Switch listenerSwitch = (Switch) findViewById(R.id.listenerSwitch);
+        displaySwitch.setChecked(false);
+        listenerSwitch.setChecked(false);
+        if (recording) {
+            recorder.stop();
+            recorder.release();
+            recorder = null;
+        }
+        recording = false;
+        display = false;
+        listener = false;
+    }
+
     public void manageRecordings(View view) {
-        meterOff();
+        stopRecording();
         Intent i = new Intent(getApplicationContext(), SoundTypeList.class);
         startActivity(i);
     }
@@ -284,13 +314,8 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         @Override
         public void run() {
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
-
-            AudioRecord record = new AudioRecord(MediaRecorder.AudioSource.MIC, 44100,
-            AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
-            record.startRecording();
-
             while (shouldContinue()) {
-                record.read(mAudioBuffer, 0, bufferSize);
+                recorder.read(mAudioBuffer, 0, bufferSize);
                 if(bufferList.size() >= MAX_BUFFER_SIZE) {
                     bufferList.remove(0);
                 }
@@ -298,9 +323,6 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                 analyzeAndNotify(mAudioBuffer);
                 waveView.updateAudioData(mAudioBuffer);
             }
-
-            record.stop();
-            record.release();
         }
 
         /**
