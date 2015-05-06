@@ -53,6 +53,11 @@ public class SoundTypeAdapter extends ArrayAdapter<SoundType> {
             TextView soundTypeName = (TextView) v.findViewById(R.id.soundTypeName);
             soundTypeName.setText(s);
         }
+
+        Button delete = (Button)v.findViewById(R.id.delete);
+        delete.setFocusable(false);
+        delete.setFocusableInTouchMode(false);
+
         if(s.equals("Uncategorized")) {
             CheckBox checkbox = (CheckBox) v.findViewById(R.id.checkBox);
             checkbox.setVisibility(View.INVISIBLE);
@@ -90,9 +95,6 @@ public class SoundTypeAdapter extends ArrayAdapter<SoundType> {
                 }
             });
         }
-        Button delete = (Button)v.findViewById(R.id.delete);
-        delete.setFocusable(false);
-        delete.setFocusableInTouchMode(false);
         if(s.equals("Uncategorized")) {
             delete.setVisibility(View.INVISIBLE);
         } else {
