@@ -71,7 +71,7 @@ public class WaveformView extends SurfaceView {
         mPaint.setColor(Color.GREEN);
         float lastX = 0;
         for (short[] buffer : audioHistory) {
-            int index = (int) ((width - 80) * count / HISTORY_SIZE);
+            int index = (int) ((width - 80) * count / (HISTORY_SIZE - 2));
 
             int sum = 0;
             for (int j = 0; j < buffer.length; j++) {

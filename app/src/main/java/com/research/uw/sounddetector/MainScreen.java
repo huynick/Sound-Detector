@@ -209,6 +209,10 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         Switch listenerSwitch = (Switch) findViewById(R.id.listenerSwitch);
         displaySwitch.setChecked(false);
         listenerSwitch.setChecked(false);
+        if (recordingThread != null) {
+            recordingThread.stopRunning();
+            recordingThread = null;
+        }
         if (recording) {
             recorder.stop();
             recorder.release();

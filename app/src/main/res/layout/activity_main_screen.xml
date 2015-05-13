@@ -38,7 +38,8 @@
                 android:text="LISTENER"
                 android:id="@+id/listenerText"
                 android:textColor="#ffffffff"
-                 />
+                android:textIsSelectable="false"
+                android:textSize="33sp" />
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -47,7 +48,7 @@
 
             <Switch
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="fill_parent"
                 android:id="@+id/listenerSwitch"
                 android:textOn="ON"
                 android:textOff="OFF"
@@ -76,7 +77,8 @@
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="DISPLAY"
                 android:id="@+id/displayText"
-                android:textColor="#ffffffff" />
+                android:textColor="#ffffffff"
+                android:textSize="33sp" />
 
             <View
                 android:layout_width="0dp"
@@ -86,7 +88,7 @@
 
             <Switch
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="fill_parent"
                 android:id="@+id/displaySwitch"
                 android:onClick="displayOn"
                 android:textOn="ON"
