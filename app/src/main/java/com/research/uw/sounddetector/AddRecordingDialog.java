@@ -21,9 +21,12 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.ToggleButton;
 
+import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 public class AddRecordingDialog extends DialogFragment {
@@ -32,6 +35,7 @@ public class AddRecordingDialog extends DialogFragment {
     private LineWaveformView waveView;
     private RecordingThread recordingThread;
     private int bufferSize;
+    private int shortBufferSize;
     private Recording recording;
     private EditText nameEditText;
     private String mFileName;
@@ -83,18 +87,8 @@ public class AddRecordingDialog extends DialogFragment {
         int channelMode = AudioFormat.CHANNEL_IN_MONO;
         int encodingMode = AudioFormat.ENCODING_PCM_16BIT;
         bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelMode, encodingMode);
-        if (bufferSize > sampleRate) {
-            bufferSize = sampleRate;
-        }
-        System.out.println(bufferSize);
-        int detectAfterEvery = (int)((float)sampleRate * 1.0f);
-
-        if (detectAfterEvery > bufferSize)
-        {
-            Log.w("Add Dialog", "Increasing buffer to hold enough samples " + detectAfterEvery + " was: " + bufferSize);
-            bufferSize = detectAfterEvery;
-        }
-        mAudioBuffer = new short[bufferSize];
+        shortBufferSize = bufferSize / 2;
+        mAudioBuffer = new short[shortBufferSize];
         waveView = (LineWaveformView) view.findViewById(R.id.waveView);
         nameEditText = (EditText) view.findViewById(R.id.nameEditText);
         nameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener()
@@ -183,9 +177,6 @@ public class AddRecordingDialog extends DialogFragment {
         AudioRecord m_record;
         AudioTrack m_track;
         int bufferSize = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        if (bufferSize > 44100) {
-            bufferSize = 44100;
-        }
 
         m_record = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 44100, AudioFormat.CHANNEL_IN_MONO,
@@ -198,12 +189,12 @@ public class AddRecordingDialog extends DialogFragment {
         m_track.setPlaybackRate(44100);
 
         m_record.startRecording();
-        Log.i(LOG_TAG,"Audio Recording started");
+        Log.i(LOG_TAG, "Audio Recording started");
         m_track.play();
-        Log.i(LOG_TAG,"Audio Playing started");
+        Log.i(LOG_TAG, "Audio Playing started");
 
         while (m_isRun) {
-            m_record.read(buffer, 0, 44100);
+            m_record.read(buffer, 0, buffer.length);
             m_track.write(buffer, 0, buffer.length);
         }
     }
@@ -234,25 +225,44 @@ public class AddRecordingDialog extends DialogFragment {
             Time time = new Time();   time.setToNow();
             Log.d("TIME TEST", Long.toString(time.toMillis(false)));
             FileOutputStream os = null;
+            DataOutputStream dos = null;
+            RandomAccessFile raf = null;
             try {
+                raf = new RandomAccessFile(new File(mFileName), "rw");
                 os = new FileOutputStream(mFileName);
+                dos = new DataOutputStream(os);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
 
             while (shouldContinue()) {
-                record.read(mAudioBuffer, 0, bufferSize);
-                int read = record.read(byteBuffer, 0, bufferSize);
-                System.out.println("read: " + read);
+                int shorts = record.read(mAudioBuffer, 0, mAudioBuffer.length);
+                Log.e("shorts read", shorts + "");
                 waveView.updateAudioData(mAudioBuffer);
                 try {
                     if (os != null) {
-                        os.write(byteBuffer, 0, bufferSize);
-                        dataRecorded += bufferSize;
+                        for (int i = 0; i < shorts; i++) {
+                            //Log.e("i", i + " " + Short.reverseBytes(mAudioBuffer[i]));
+                            raf.writeShort(Short.reverseBytes(mAudioBuffer[i]));
+                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+
+            int shorts = record.read(mAudioBuffer, 0, mAudioBuffer.length);
+            Log.e("shorts read", shorts + "");
+            waveView.updateAudioData(mAudioBuffer);
+            try {
+                if (os != null) {
+                    for (int i = 0; i < shorts; i++) {
+                        //Log.e("i", i + " " + Short.reverseBytes(mAudioBuffer[i]));
+                        raf.writeShort(Short.reverseBytes(mAudioBuffer[i]));
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
             //writeWavHeader();
@@ -262,7 +272,7 @@ public class AddRecordingDialog extends DialogFragment {
 
             record.stop();
             record.release();
-//            loopback();
+            //loopback();
         }
 
         /**

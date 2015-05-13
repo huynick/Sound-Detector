@@ -202,7 +202,6 @@ public class EditRecordingDialog extends DialogFragment {
             }
 
             fis.close();
-            Log.e("Array", Arrays.toString(shortArr));
 
             waveform.updateAudioData(shortArr);
         }  catch(IOException e) {
