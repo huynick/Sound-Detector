@@ -28,14 +28,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class AddRecordingDialog extends DialogFragment {
 
-    private MediaRecorder mRecorder;
     private LineWaveformView waveView;
     private RecordingThread recordingThread;
     private int bufferSize;
     private int shortBufferSize;
+    private int sampleRate;
     private Recording recording;
     private EditText nameEditText;
     private String mFileName;
@@ -43,6 +44,7 @@ public class AddRecordingDialog extends DialogFragment {
     private String autoName;
     private RecordingTableOpenHelper dbHelper;
     private ArrayList<String> soundTypeList;
+    private ArrayList<short[]> shortArrayList;
 
     private short[] mAudioBuffer;
     private byte[] byteBuffer;
@@ -83,12 +85,14 @@ public class AddRecordingDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.activity_dialog_add_recording, null);
-        int sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM);
         int channelMode = AudioFormat.CHANNEL_IN_MONO;
         int encodingMode = AudioFormat.ENCODING_PCM_16BIT;
-        bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelMode, encodingMode);
+        shortArrayList = new ArrayList<short[]>();
+        sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM);
+        bufferSize = AudioRecord.getMinBufferSize(sampleRate, channelMode, encodingMode) * 2;
         shortBufferSize = bufferSize / 2;
         mAudioBuffer = new short[shortBufferSize];
+        Log.e("buffersize", bufferSize + "");
         waveView = (LineWaveformView) view.findViewById(R.id.waveView);
         nameEditText = (EditText) view.findViewById(R.id.nameEditText);
         nameEditText.setOnFocusChangeListener(new View.OnFocusChangeListener()
@@ -166,39 +170,8 @@ public class AddRecordingDialog extends DialogFragment {
             }
         });
         byteBuffer = new byte[bufferSize];
-        mAudioBuffer = new short[bufferSize];
         return builder.create();
     }
-
-    boolean m_isRun = true;
-    byte[] buffer = new byte[44100];
-
-    public void loopback() {
-        AudioRecord m_record;
-        AudioTrack m_track;
-        int bufferSize = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT);
-
-        m_record = new AudioRecord(MediaRecorder.AudioSource.MIC,
-                44100, AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT, bufferSize * 1);
-
-        m_track = new AudioTrack(AudioManager.STREAM_ALARM,
-                44100, AudioFormat.CHANNEL_OUT_MONO,
-                AudioFormat.ENCODING_PCM_16BIT, bufferSize * 1,
-                AudioTrack.MODE_STREAM);
-        m_track.setPlaybackRate(44100);
-
-        m_record.startRecording();
-        Log.i(LOG_TAG, "Audio Recording started");
-        m_track.play();
-        Log.i(LOG_TAG, "Audio Playing started");
-
-        while (m_isRun) {
-            m_record.read(buffer, 0, buffer.length);
-            m_track.write(buffer, 0, buffer.length);
-        }
-    }
-
 
     public Recording getRecording() {
         return recording;
@@ -219,6 +192,7 @@ public class AddRecordingDialog extends DialogFragment {
 
             AudioRecord record = new AudioRecord(MediaRecorder.AudioSource.MIC, AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM),
             AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+            Log.e("Sample rate", AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM) + "");
             ArrayList<Byte> audioBytes = new ArrayList<Byte>();
 
             record.startRecording();
@@ -235,30 +209,33 @@ public class AddRecordingDialog extends DialogFragment {
                 e.printStackTrace();
             }
 
+            int count = 0;
             while (shouldContinue()) {
                 int shorts = record.read(mAudioBuffer, 0, mAudioBuffer.length);
+                count += shorts;
                 Log.e("shorts read", shorts + "");
                 waveView.updateAudioData(mAudioBuffer);
-                try {
-                    if (os != null) {
-                        for (int i = 0; i < shorts; i++) {
-                            //Log.e("i", i + " " + Short.reverseBytes(mAudioBuffer[i]));
-                            raf.writeShort(Short.reverseBytes(mAudioBuffer[i]));
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                short[] dest = new short[shorts];
+                Log.e("audiobuffer", Arrays.toString(mAudioBuffer));
+                Log.e("dest", Arrays.toString(dest));
+                System.arraycopy(mAudioBuffer, 0, dest, 0, shorts);
+                shortArrayList.add(dest);
             }
-
+            Log.e("shorts before", count + "");
             int shorts = record.read(mAudioBuffer, 0, mAudioBuffer.length);
+            count += shorts;
+            Log.e("shorts after", count + "");
             Log.e("shorts read", shorts + "");
             waveView.updateAudioData(mAudioBuffer);
+            shortArrayList.add(mAudioBuffer);
+
             try {
                 if (os != null) {
-                    for (int i = 0; i < shorts; i++) {
-                        //Log.e("i", i + " " + Short.reverseBytes(mAudioBuffer[i]));
-                        raf.writeShort(Short.reverseBytes(mAudioBuffer[i]));
+                    for (short[] shortArr : shortArrayList) {
+                        for (int i = 0; i < shortArr.length; i++) {
+                            //Log.e("i", i + " " + Short.reverseBytes(mAudioBuffer[i]));
+                            raf.writeShort(Short.reverseBytes(shortArr[i]));
+                        }
                     }
                 }
             } catch (IOException e) {

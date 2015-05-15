@@ -352,7 +352,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         sum = sum / mAudioBuffer.length;
         int mId = 0;
         if (sum > 2000.0f) {
-            notify("Too loud!");
+            //notify("Too loud!");
         }
     }
 

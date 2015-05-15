@@ -7,7 +7,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="New Text"
-        android:id="@+id/soundTypeName" />
+        android:id="@+id/soundTypeName"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/checkBox"
+        android:layout_toEndOf="@+id/checkBox" />
 
     <CheckBox
         android:layout_width="wrap_content"
@@ -15,8 +18,8 @@
         android:text=" "
         android:id="@+id/checkBox"
         android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/delete"
-        android:layout_toStartOf="@+id/delete" />
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"

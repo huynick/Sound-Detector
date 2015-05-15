@@ -41,6 +41,7 @@ public class EditRecordingDialog extends DialogFragment {
     private Spinner soundTypes;
     private EditText recordingNameEditText;
     private Button playButton, saveButton, cancelButton;
+    private int sampleRate;
     private StaticLineWaveformView waveform;
     private AudioTrack audioTrack;
     private RecordingTableOpenHelper dbHelper;
@@ -90,27 +91,13 @@ public class EditRecordingDialog extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.activity_dialog_edit_recording, null);
+        sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM);
         builder.setView(view);
         soundTypeList = new ArrayList<String>();
         waveform = (StaticLineWaveformView)view.findViewById(R.id.waveView);
-
-        try {
-            FileInputStream fis = new FileInputStream (new File(recording.getFileName()));
-            byte[] buf = new byte[80000];
-            short[] shortArr = new short[buf.length/2];
-            fis.read(buf);
-            for (int i = 0; i <buf.length/2 ; i++)
-            {
-                shortArr[i] = ( (short)( ( buf[i*2] & 0xff )|( buf[i*2 + 1] << 8 ) ) );
-            }
-
-            fis.close();
-            Log.e("Array", Arrays.toString(shortArr));
-            waveform.updateAudioData(shortArr);
-        }  catch(IOException e) {
-            Log.e("Exception", "IO Exception");
-        }
-
+        int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        String filepath = recording.getFileName();
+        waveform.updateAudioData(filepath);
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
         // Define a projection that specifies which columns from the database
@@ -145,6 +132,15 @@ public class EditRecordingDialog extends DialogFragment {
 
         ArrayAdapter<String> soundTypeAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, soundTypeList);
         soundTypes.setAdapter(soundTypeAdapter);
+        int pos = 0;
+        for (int i = 0; i < soundTypeList.size(); i++) {
+            if (soundTypeList.get(i).equals(recording.getSoundType())) {
+                pos = i;
+            }
+        }
+        soundTypes.setSelection(pos);
+
+        recordingNameEditText.setText(recording.getName());
 
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -191,40 +187,21 @@ public class EditRecordingDialog extends DialogFragment {
     }
 
     public void playWav(){
-        try {
-            FileInputStream fis = new FileInputStream (new File(recording.getFileName()));
-            byte[] buf = new byte[80000];
-            short[] shortArr = new short[buf.length/2];
-            fis.read(buf);
-            for (int i = 0; i <buf.length/2 ; i++)
-            {
-                shortArr[i] = ( (short)( ( buf[i*2] & 0xff )|( buf[i*2 + 1] << 8 ) ) );
-            }
-
-            fis.close();
-
-            waveform.updateAudioData(shortArr);
-        }  catch(IOException e) {
-            Log.e("Exception", "IO Exception");
+        int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        if (minBufferSize < sampleRate) {
+            minBufferSize = sampleRate;
         }
-
-
-
-        int minBufferSize = AudioTrack.getMinBufferSize(44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        if (minBufferSize < 44100) {
-            minBufferSize = 44100;
-        }
-        AudioTrack at = new AudioTrack(AudioManager.STREAM_MUSIC, 44100, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM);
+        AudioTrack at = new AudioTrack(AudioManager.STREAM_SYSTEM, sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM);
         String filepath = recording.getFileName();
 
         int i = 0;
         byte[] s = new byte[minBufferSize];
+        int dataPlayed = 0;
         try {
             FileInputStream fin = new FileInputStream(filepath);
             DataInputStream dis = new DataInputStream(fin);
 
             at.play();
-            int dataPlayed = 0;
             while((i = dis.read(s, 0, minBufferSize)) > -1){
                 at.write(s, 0, i);
                 dataPlayed += i;
