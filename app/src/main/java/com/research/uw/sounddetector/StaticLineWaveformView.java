@@ -24,6 +24,7 @@ public class StaticLineWaveformView extends View {
     private static String filename;
 
     private int fileLength;
+    private double begin, end;
     private File file;
 
     private final Paint mPaint;
@@ -58,6 +59,12 @@ public class StaticLineWaveformView extends View {
         Log.e("LineWaveFormView", "Updated");
     }
 
+    public void updateBeginAndEnd(double begin, double end) {
+        this.begin = begin;
+        this.end = end;
+        invalidate();
+    }
+
     @Override
     public void onDraw(Canvas canvas) {
         drawWaveform(canvas);
@@ -65,29 +72,49 @@ public class StaticLineWaveformView extends View {
 
     private void drawWaveform(Canvas canvas) {
         Log.e("LineWaveFormView", "Start drawing");
-        canvas.drawColor(Color.BLACK);
+        canvas.drawColor(Color.WHITE);
 
         float width = getWidth() * 2;
         float height = getHeight();
         float centerY = height / 2;
         int brightness = 255;
 
-        mPaint.setColor(Color.WHITE);
+        mPaint.setColor(Color.BLACK);
+        mPaint.setStyle(Paint.Style.FILL);
+        canvas.drawRect((float)(width / 200 * begin), 0, (float) (width / 200 * end), height, mPaint);
         mPaint.setColor(Color.argb(brightness, 128, 255, 192));
+        mPaint.setStyle(Paint.Style.STROKE);
 
         float lastX = -1;
         float lastY = -1;
+
+        float maxHeight = 0;
+
+        try {
+            RandomAccessFile raf = new RandomAccessFile(file, "r");
+            for (int x = 0; x < width / 2; x++) {
+                int index = (int) ((x / (width / 2)) * (fileLength / 2));
+                raf.seek((long)index * 2);
+                short sample = raf.readShort();
+                sample = Short.reverseBytes(sample);
+                if (sample > maxHeight) {
+                    maxHeight = (float)sample;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         // For efficiency, we don't draw all of the samples in the buffer, but only the ones
         // that align with pixel boundaries.
         try {
             RandomAccessFile raf = new RandomAccessFile(file, "r");
-            for (int x = 0; x < width; x++) {
-                int index = (int) ((x / width) * (fileLength - 22));
-                Log.e("index", index + "");
-                raf.seek((long)index);
+            for (int x = 0; x < width / 2; x++) {
+                int index = (int) ((x / (width / 2)) * (fileLength / 2));
+                raf.seek((long)index * 2);
                 short sample = raf.readShort();
-                float y = (sample / MAX_HEIGHT_TO_DRAW) * centerY + centerY;
+                sample = Short.reverseBytes(sample);
+                float y = (sample / maxHeight) * centerY + centerY;
 
                 if (lastX != -1) {
                     canvas.drawLine(lastX, lastY, x, y, mPaint);

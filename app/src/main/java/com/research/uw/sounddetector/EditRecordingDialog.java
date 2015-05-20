@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -42,6 +43,7 @@ public class EditRecordingDialog extends DialogFragment {
     private EditText recordingNameEditText;
     private Button playButton, saveButton, cancelButton;
     private int sampleRate;
+    private double begin, end;
     private StaticLineWaveformView waveform;
     private AudioTrack audioTrack;
     private RecordingTableOpenHelper dbHelper;
@@ -98,7 +100,27 @@ public class EditRecordingDialog extends DialogFragment {
         int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
         String filepath = recording.getFileName();
         waveform.updateAudioData(filepath);
+        waveform.updateBeginAndEnd(recording.getStart(), recording.getEnd());
         SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        //Instantiate Seekbar
+        RangeSeekBar<Double> seekBar = new RangeSeekBar<Double>(0.0, 100.0, this.getActivity().getBaseContext());
+        seekBar.setSelectedMaxValue(recording.getEnd());
+        seekBar.setSelectedMinValue(recording.getStart());
+        begin = recording.getStart();
+        end = recording.getEnd();
+
+        seekBar.setNotifyWhileDragging(true);
+        seekBar.setOnRangeSeekBarChangeListener(new RangeSeekBar.OnRangeSeekBarChangeListener<Double>() {
+            @Override
+            public void onRangeSeekBarValuesChanged(RangeSeekBar<?> bar, Double minValue, Double maxValue) {
+                begin = minValue;
+                end = maxValue;
+                waveform.updateBeginAndEnd(begin, end);
+            }
+        });
+        ViewGroup layout = (ViewGroup) view.findViewById(R.id.seekBar);
+        layout.addView(seekBar);
 
         // Define a projection that specifies which columns from the database
         // you will actually use after this query.
@@ -158,6 +180,8 @@ public class EditRecordingDialog extends DialogFragment {
                 values.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE, (String)soundTypes.getSelectedItem());
                 Log.e("Selected item", (String)soundTypes.getSelectedItem());
                 values.put(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME, recordingNameEditText.getText().toString());
+                values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_BEGINNING, begin);
+                values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_END, end);
 
                 SQLiteDatabase writeDb = dbHelper.getWritableDatabase();
 
@@ -193,19 +217,39 @@ public class EditRecordingDialog extends DialogFragment {
         }
         AudioTrack at = new AudioTrack(AudioManager.STREAM_SYSTEM, sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM);
         String filepath = recording.getFileName();
+        File f = new File(recording.getFileName());
+        long length = f.length();
 
         int i = 0;
-        byte[] s = new byte[minBufferSize];
+        byte[] s = new byte[minBufferSize * 2];
         int dataPlayed = 0;
         try {
             FileInputStream fin = new FileInputStream(filepath);
             DataInputStream dis = new DataInputStream(fin);
+            int skip = (int)(length * begin / 100.0);
+            if (skip % 2 == 1) {
+                skip = skip - 1;
+            }
+            dis.skipBytes(skip);
+            int dataEnd = (int)(length * (end - begin) / 100.0);
+            System.out.println(dataEnd);
 
             at.play();
-            while((i = dis.read(s, 0, minBufferSize)) > -1){
-                at.write(s, 0, i);
-                dataPlayed += i;
+            boolean done = false;
+            while(i > -1 && !done){
+                if (dataEnd < dataPlayed + 2 * minBufferSize) {
+                    i = dis.read(s, 0, dataEnd - dataPlayed);
+                    done = true;
+                } else {
+                    i = dis.read(s, 0, minBufferSize);
+                }
+                System.out.println(i);
+                if (i > -1) {
+                    at.write(s, 0, i);
+                    dataPlayed += i;
+                }
             }
+
             System.out.println(dataPlayed);
             at.stop();
             at.release();

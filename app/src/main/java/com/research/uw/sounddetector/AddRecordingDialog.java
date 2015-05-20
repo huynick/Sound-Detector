@@ -162,7 +162,7 @@ public class AddRecordingDialog extends DialogFragment {
                     if(recordingThread != null) {
                         recordingThread.stopRunning();
                         recordingThread = null;
-                        recording = new Recording(nameEditText.getText().toString(), mFileName, soundType);
+                        recording = new Recording(nameEditText.getText().toString(), mFileName, soundType, 0.0, 100.0);
                     }
                     mListener.onDialogStopClick(AddRecordingDialog.this, recording);
                     dismiss();

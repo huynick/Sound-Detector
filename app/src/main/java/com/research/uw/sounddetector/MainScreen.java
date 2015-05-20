@@ -186,10 +186,6 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     public void help(View view) {
         HelpDialog dialog = new HelpDialog();
         dialog.show(getSupportFragmentManager(), "HelpDialog");
-        RecordingTableOpenHelper mDbHelper = new RecordingTableOpenHelper(getBaseContext());
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        db.delete(RecordingContract.RecordingEntry.TABLE_NAME, null, null);
-        db.delete(RecordingContract.RecordingEntry.SOUND_TABLE_NAME, null, null);
     }
 
     public boolean help(MenuItem item) {
@@ -303,6 +299,8 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME, recording.getFileName());
         values.put(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME, recording.getName());
         values.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE, recording.getSoundType());
+        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_BEGINNING, 0.0);
+        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_END, 100.0);
 
         db.insert(
                 RecordingContract.RecordingEntry.TABLE_NAME,

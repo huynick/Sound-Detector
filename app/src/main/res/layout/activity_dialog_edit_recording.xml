@@ -52,13 +52,20 @@
         android:layout_below="@+id/recordingNameText"
         android:paddingLeft="10dp"
         android:paddingRight="10dp" />
+    
+    <RelativeLayout
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:id="@+id/seekBar"
+        android:layout_below="@+id/waveView"
+        />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Play"
         android:id="@+id/playButton"
-        android:layout_below="@+id/waveView"
+        android:layout_below="@+id/seekBar"
         android:layout_centerHorizontal="true" />
 
     <LinearLayout

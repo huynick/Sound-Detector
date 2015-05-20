@@ -80,7 +80,9 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
                 RecordingContract.RecordingEntry._ID,
                 RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME,
                 RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME,
-                RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE
+                RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE,
+                RecordingContract.RecordingEntry.COLUMN_NAME_FILE_BEGINNING,
+                RecordingContract.RecordingEntry.COLUMN_NAME_FILE_END
         };
 
         String selection = RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE + " = ?";
@@ -99,13 +101,19 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
         if(c.moveToFirst()) {
             Recording r = new Recording(c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME)),
                     c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME)),
-                    c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE)));
+                    c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE)),
+                    c.getDouble(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_BEGINNING)),
+                    c.getDouble(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_END)));
             recordingListAdapter.add(r);
         }
         while(c.moveToNext()) {
             Recording r = new Recording(c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME)),
                     c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME)),
-                    c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE)));
+                    c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE)),
+                    c.getDouble(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_BEGINNING)),
+                    c.getDouble(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_END)));
+            System.out.println("begin" + r.getStart());
+            System.out.println("end" + r.getEnd());
             recordingListAdapter.add(r);
         }
     }

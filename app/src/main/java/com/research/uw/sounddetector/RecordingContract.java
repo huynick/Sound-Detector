@@ -16,6 +16,9 @@ public class RecordingContract {
         public static final String COLUMN_NAME_RECORDING_NAME = "recording";
         public static final String COLUMN_NAME_FILE_NAME = "fileName";
         public static final String COLUMN_NAME_SOUND_TYPE = "soundType";
+        public static final String COLUMN_NAME_FILE_BEGINNING = "begin";
+        public static final String COLUMN_NAME_FILE_END = "end";
+        public static final String COLUMN_NAME_EDITED_FILE = "editedFile";
 
         public static final String SOUND_TABLE_NAME = "soundName";
         public static final String COLUMN_NAME_SOUND_TYPE_NAME = "soundTypeName";
@@ -30,7 +33,10 @@ public class RecordingContract {
                     RecordingEntry._ID + " INTEGER PRIMARY KEY," +
                     RecordingEntry.COLUMN_NAME_RECORDING_NAME + TEXT_TYPE + COMMA_SEP +
                     RecordingEntry.COLUMN_NAME_FILE_NAME + TEXT_TYPE + COMMA_SEP +
-                    RecordingEntry.COLUMN_NAME_SOUND_TYPE + TEXT_TYPE +
+                    RecordingEntry.COLUMN_NAME_SOUND_TYPE + TEXT_TYPE + COMMA_SEP +
+                    RecordingEntry.COLUMN_NAME_FILE_BEGINNING + " REAL" + COMMA_SEP +
+                    RecordingEntry.COLUMN_NAME_FILE_END + " REAL" + COMMA_SEP +
+                    RecordingEntry.COLUMN_NAME_EDITED_FILE + TEXT_TYPE +
                     " )";
 
     public static final String SQL_CREATE_SOUND_ENTRIES =
