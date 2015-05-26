@@ -3,92 +3,106 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:text="Sound Type"
-        android:id="@+id/soundTypeText"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:minHeight="30dp" />
-
-    <Spinner
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/soundTypes"
-        android:layout_alignParentTop="true"
-        android:layout_toRightOf="@+id/soundTypeText"
-        android:layout_toEndOf="@+id/soundTypeText"
-        android:layout_alignBottom="@+id/soundTypeText"
-        android:minHeight="100dp"
-        android:nestedScrollingEnabled="true" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:text="Recording Name"
-        android:id="@+id/recordingNameText"
-        android:layout_below="@+id/soundTypeText"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <EditText
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/recordingNameEditText"
-        android:layout_alignBottom="@+id/recordingNameText"
-        android:layout_toRightOf="@+id/recordingNameText"
-        android:layout_toEndOf="@+id/recordingNameText" />
-
-    <com.research.uw.sounddetector.StaticLineWaveformView
-        android:layout_width="wrap_content"
-        android:layout_height="75dp"
-        android:id="@+id/waveView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/recordingNameText"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp" />
-    
     <RelativeLayout
-        android:layout_height="wrap_content"
-        android:layout_width="fill_parent"
-        android:id="@+id/seekBar"
-        android:layout_below="@+id/waveView"
-        />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Play"
-        android:id="@+id/playButton"
-        android:layout_below="@+id/seekBar"
-        android:layout_centerHorizontal="true" />
-
-    <LinearLayout
-        android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/playButton"
+        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:gravity="center_horizontal">
+        android:id="@+id/relativeLayout2">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sound Type"
+            android:id="@+id/soundTypeName"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <Spinner
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/soundTypes"
+            android:minHeight="50dp"
+            android:nestedScrollingEnabled="true"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/soundTypeName"
+            android:layout_toEndOf="@+id/soundTypeName" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/relativeLayout2"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Name of Recording"
+            android:id="@+id/nameTextView"
+            android:layout_alignBottom="@+id/nameEditText"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/nameEditText"
+            android:inputType="textCapWords"
+            android:layout_alignParentTop="true"
+            android:layout_toRightOf="@+id/nameTextView"
+            android:layout_toEndOf="@+id/nameTextView"
+            android:focusable="true" />
+
+        <com.research.uw.sounddetector.StaticLineWaveformView
+            android:layout_width="wrap_content"
+            android:layout_height="75dp"
+            android:id="@+id/waveView"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:layout_below="@+id/nameEditText"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <RelativeLayout
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:id="@+id/seekBar"
+            android:layout_below="@+id/waveView"
+            />
 
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save"
-            android:id="@+id/saveButton" />
+            android:text="Play"
+            android:id="@+id/playButton"
+            android:layout_below="@+id/seekBar"
+            android:layout_centerHorizontal="true" />
 
-        <Button
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Cancel"
-            android:id="@+id/cancelButton" />
-    </LinearLayout>
+            android:layout_below="@+id/playButton"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:gravity="center_horizontal">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Save"
+                android:id="@+id/saveButton" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cancel"
+                android:id="@+id/cancelButton" />
+        </LinearLayout>
+
+    </RelativeLayout>
 
 
 </RelativeLayout>

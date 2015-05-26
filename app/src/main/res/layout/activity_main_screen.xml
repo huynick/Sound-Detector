@@ -50,10 +50,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="fill_parent"
                 android:id="@+id/listenerSwitch"
-                android:textOn="ON"
-                android:textOff="OFF"
                 android:onClick="listenerOn"
-                android:textColorHighlight="#ffffffff" />
+                android:background="#ff000000"
+                android:showText="false"
+                android:text="OFF"
+                android:textColor="#ffffffff" />
         </LinearLayout>
 
         <View
@@ -91,9 +92,8 @@
                 android:layout_height="fill_parent"
                 android:id="@+id/displaySwitch"
                 android:onClick="displayOn"
-                android:textOn="ON"
-                android:textOff="OFF"
-                android:textColor="#ffffffff" />
+                android:textColor="#ffffffff"
+                android:text="OFF" />
         </LinearLayout>
 
         <LinearLayout
@@ -161,13 +161,4 @@
 
     </RelativeLayout>
 
-    <Spinner
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/spinner"
-        android:layout_centerVertical="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginLeft="306dp"
-        android:layout_marginStart="306dp" />
 </RelativeLayout>

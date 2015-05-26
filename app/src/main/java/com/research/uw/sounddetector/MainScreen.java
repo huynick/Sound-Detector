@@ -126,6 +126,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     public void displayOn(View view) {
         Switch displaySwitch = (Switch) findViewById(R.id.displaySwitch);
         if (displaySwitch.isChecked()) {
+            displaySwitch.setText("ON");
             display = true;
             if (!recording) {
                 if (recorder == null) {
@@ -139,6 +140,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                 recordingThread.start();
             }
         } else {
+            displaySwitch.setText("OFF");
             if (recordingThread != null) {
                 recordingThread.stopRunning();
                 recordingThread = null;
@@ -160,6 +162,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     public void listenerOn(View view) {
         Switch listenerSwitch = (Switch) findViewById(R.id.listenerSwitch);
         if (listenerSwitch.isChecked()) {
+            listenerSwitch.setText("ON");
             listener = true;
             if (!recording) {
                 if (recorder == null) {
@@ -169,6 +172,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                 recording = true;
             }
         } else {
+            listenerSwitch.setText("OFF");
             listener = false;
             if (recording) {
                 if (!display) {

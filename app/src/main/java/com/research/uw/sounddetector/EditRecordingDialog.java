@@ -147,7 +147,7 @@ public class EditRecordingDialog extends DialogFragment {
             soundTypeList.add(s);
         }
         soundTypes = (Spinner) view.findViewById(R.id.soundTypes);
-        recordingNameEditText = (EditText) view.findViewById(R.id.recordingNameEditText);
+        recordingNameEditText = (EditText) view.findViewById(R.id.nameEditText);
         playButton = (Button) view.findViewById(R.id.playButton);
         saveButton = (Button) view.findViewById(R.id.saveButton);
         cancelButton = (Button) view.findViewById(R.id.cancelButton);
