@@ -1,6 +1,7 @@
 package com.research.uw.sounddetector;
 
 import android.app.Application;
+import android.util.Log;
 
 import com.parse.Parse;
 

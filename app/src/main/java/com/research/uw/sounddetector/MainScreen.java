@@ -24,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
 import android.view.View;
+import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.ToggleButton;
 import android.media.AudioRecord;
@@ -36,6 +37,8 @@ import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 import com.parse.Parse;
 import com.parse.ParseInstallation;
+import com.parse.ParsePush;
+import com.parse.PushService;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,7 +68,19 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         setContentView(R.layout.activity_main_screen);
         Switch listener = (Switch)findViewById(R.id.listenerSwitch);
         listener.setChecked(false);
+        listener.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                listenerOn(buttonView);
+            }
+        });
         Switch display = (Switch) findViewById(R.id.displaySwitch);
+        display.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                displayOn(buttonView);
+            }
+        });
         display.setChecked(false);
         sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM);
         channelMode = AudioFormat.CHANNEL_IN_MONO;
@@ -82,6 +97,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ParseInstallation.getCurrentInstallation().saveInBackground();
+        ParsePush.subscribeInBackground("Test1");
     }
 
     // You need to do the Play Services APK check here too.
