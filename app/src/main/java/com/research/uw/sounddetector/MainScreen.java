@@ -397,7 +397,21 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("Would you like to add a new sound type for your uncategorized recording?").setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
+                    // Gets the data repository in write mode
+                    SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
+                    // Create a new map of values, where column names are the keys
+                    ContentValues values = new ContentValues();
+                    values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME, finalRec.getFileName());
+                    values.put(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME, finalRec.getName());
+                    values.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE, finalRec.getSoundType());
+                    values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_BEGINNING, 0.0);
+                    values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_END, 100.0);
+
+                    db.insert(
+                            RecordingContract.RecordingEntry.TABLE_NAME,
+                            null,
+                            values);
                 }
             }).setPositiveButton(("Yes"), new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
