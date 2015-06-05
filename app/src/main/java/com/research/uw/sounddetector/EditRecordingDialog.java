@@ -168,6 +168,7 @@ public class EditRecordingDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 Log.e("File name", recording.getFileName());
+                //waveform.startPlaying();
                 playWav();
             }
         });
@@ -223,7 +224,7 @@ public class EditRecordingDialog extends DialogFragment {
         int i = 0;
         byte[] s = new byte[minBufferSize * 2];
         int dataPlayed = 0;
-        try {
+            try {
             FileInputStream fin = new FileInputStream(filepath);
             DataInputStream dis = new DataInputStream(fin);
             int skip = (int)(length * begin / 100.0);
@@ -233,22 +234,26 @@ public class EditRecordingDialog extends DialogFragment {
             dis.skipBytes(skip);
             int dataEnd = (int)(length * (end - begin) / 100.0);
             System.out.println(dataEnd);
-
             at.play();
             boolean done = false;
             while(i > -1 && !done){
-                if (dataEnd < dataPlayed + 2 * minBufferSize) {
+                if (dataEnd < dataPlayed + minBufferSize) {
                     i = dis.read(s, 0, dataEnd - dataPlayed);
+                    for (int j = i; j < minBufferSize; j++ ) {
+                        s[j] = 0;
+                    }
                     done = true;
                 } else {
                     i = dis.read(s, 0, minBufferSize);
                 }
                 System.out.println(i);
                 if (i > -1) {
-                    at.write(s, 0, i);
+                    at.write(s, 0, minBufferSize);
                     dataPlayed += i;
                 }
             }
+            at.write(s, 0, minBufferSize);
+
 
             System.out.println(dataPlayed);
             at.stop();

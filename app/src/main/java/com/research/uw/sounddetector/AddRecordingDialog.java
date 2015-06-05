@@ -16,6 +16,7 @@ import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -45,6 +46,10 @@ public class AddRecordingDialog extends DialogFragment {
     private RecordingTableOpenHelper dbHelper;
     private ArrayList<String> soundTypeList;
     private ArrayList<short[]> shortArrayList;
+    private AudioRecord record;
+    private ArrayAdapter<String> soundTypeAdapter;
+    private boolean recordSet;
+    private Spinner soundTypes;
 
     private short[] mAudioBuffer;
     private byte[] byteBuffer;
@@ -60,6 +65,11 @@ public class AddRecordingDialog extends DialogFragment {
 
     public interface AddRecordingDialogListener {
         public void onDialogStopClick(DialogFragment dialog, Recording recording);
+        public void onFinish(DialogFragment dialog);
+    }
+
+    public void setRecorder(AudioRecord record) {
+        this.record = record;
     }
 
     // Use this instance of the interface to deliver action events
@@ -138,11 +148,22 @@ public class AddRecordingDialog extends DialogFragment {
             String s = c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE_NAME));
             soundTypeList.add(s);
         }
-        Spinner soundTypes = (Spinner) view.findViewById(R.id.soundTypes);
+        soundTypes = (Spinner) view.findViewById(R.id.soundTypes);
 
-        ArrayAdapter<String> soundTypeAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, soundTypeList);
+        soundTypeAdapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, soundTypeList);
         soundTypes.setAdapter(soundTypeAdapter);
         soundTypes.setSelection(soundTypeList.indexOf(soundType));
+        soundTypes.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                changeFirst(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
         //TODO:Add Unrecognized IMMEDIATELY
 
         builder.setView(view).setTitle(R.string.add_recording);
@@ -162,7 +183,7 @@ public class AddRecordingDialog extends DialogFragment {
                     if(recordingThread != null) {
                         recordingThread.stopRunning();
                         recordingThread = null;
-                        recording = new Recording(nameEditText.getText().toString(), mFileName, soundType, 0.0, 100.0);
+                        recording = new Recording(nameEditText.getText().toString(), mFileName, (String)soundTypes.getSelectedItem(), 0.0, 100.0);
                     }
                     mListener.onDialogStopClick(AddRecordingDialog.this, recording);
                     dismiss();
@@ -171,6 +192,19 @@ public class AddRecordingDialog extends DialogFragment {
         });
         byteBuffer = new byte[bufferSize];
         return builder.create();
+    }
+
+    public void changeFirst(int position) {
+        String selected = soundTypeAdapter.getItem(position);
+        soundTypeAdapter.remove(selected);
+        soundTypeAdapter.insert(selected, 0);
+        soundTypes.setSelection(0);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mListener.onFinish(AddRecordingDialog.this);
     }
 
     public Recording getRecording() {
@@ -249,6 +283,7 @@ public class AddRecordingDialog extends DialogFragment {
 
             record.stop();
             record.release();
+            record = null;
             //loopback();
         }
 

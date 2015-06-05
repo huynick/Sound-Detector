@@ -35,9 +35,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SoundTypeList"
+            android:name=".Display"
             android:screenOrientation="portrait"
-            android:label="@string/title_activity_sound_type" >
+            android:label="@string/title_activity_display" >
         </activity>
         <activity
             android:name=".RecordingList"

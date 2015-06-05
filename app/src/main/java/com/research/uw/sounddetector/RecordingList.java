@@ -70,6 +70,11 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
         updateCurrRecordings();
     }
 
+    @Override
+    public void onFinish(DialogFragment dialog) {
+
+    }
+
     private void updateCurrRecordings() {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         recordingListAdapter.clear();
