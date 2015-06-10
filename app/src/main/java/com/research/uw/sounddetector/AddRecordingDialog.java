@@ -172,13 +172,14 @@ public class AddRecordingDialog extends DialogFragment {
             @Override
             public void onClick(View v) {
                 if(((ToggleButton) v.findViewById(R.id.recordButton)).isChecked()) {
-                    mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + nameEditText.getText().toString() + ".wav";
+                    File temp = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), (String)soundTypes.getSelectedItem());
+                    System.out.println(temp.getAbsolutePath());
+                    System.out.println(temp.mkdirs());
+                    mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + (String)soundTypes.getSelectedItem() + "/" + nameEditText.getText().toString() + ".wav";
                     if(recordingThread == null) {
                         recordingThread = new RecordingThread();
                         recordingThread.start();
                     }
-
-
                 } else {
                     if(recordingThread != null) {
                         recordingThread.stopRunning();
@@ -247,11 +248,8 @@ public class AddRecordingDialog extends DialogFragment {
             while (shouldContinue()) {
                 int shorts = record.read(mAudioBuffer, 0, mAudioBuffer.length);
                 count += shorts;
-                Log.e("shorts read", shorts + "");
                 waveView.updateAudioData(mAudioBuffer);
                 short[] dest = new short[shorts];
-                Log.e("audiobuffer", Arrays.toString(mAudioBuffer));
-                Log.e("dest", Arrays.toString(dest));
                 System.arraycopy(mAudioBuffer, 0, dest, 0, shorts);
                 shortArrayList.add(dest);
             }

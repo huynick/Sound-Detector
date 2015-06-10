@@ -212,62 +212,85 @@ public class EditRecordingDialog extends DialogFragment {
     }
 
     public void playWav(){
-        int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
-        if (minBufferSize < sampleRate) {
-            minBufferSize = sampleRate;
-        }
-        AudioTrack at = new AudioTrack(AudioManager.STREAM_SYSTEM, sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM);
-        String filepath = recording.getFileName();
-        File f = new File(recording.getFileName());
-        long length = f.length();
-
-        int i = 0;
-        byte[] s = new byte[minBufferSize * 2];
-        int dataPlayed = 0;
-            try {
-            FileInputStream fin = new FileInputStream(filepath);
-            DataInputStream dis = new DataInputStream(fin);
-            int skip = (int)(length * begin / 100.0);
-            if (skip % 2 == 1) {
-                skip = skip - 1;
-            }
-            dis.skipBytes(skip);
-            int dataEnd = (int)(length * (end - begin) / 100.0);
-            System.out.println(dataEnd);
-            at.play();
-            boolean done = false;
-            while(i > -1 && !done){
-                if (dataEnd < dataPlayed + minBufferSize) {
-                    i = dis.read(s, 0, dataEnd - dataPlayed);
-                    for (int j = i; j < minBufferSize; j++ ) {
-                        s[j] = 0;
-                    }
-                    done = true;
-                } else {
-                    i = dis.read(s, 0, minBufferSize);
-                }
-                System.out.println(i);
-                if (i > -1) {
-                    at.write(s, 0, minBufferSize);
-                    dataPlayed += i;
-                }
-            }
-            at.write(s, 0, minBufferSize);
-
-
-            System.out.println(dataPlayed);
-            at.stop();
-            at.release();
-            dis.close();
-            fin.close();
-
-        } catch (FileNotFoundException e) {
-            // TODO
-            e.printStackTrace();
-        } catch (IOException e) {
-            // TODO
-            e.printStackTrace();
-        }
+        PlayBackThread playback = new PlayBackThread();
+        waveform.startPlaying();
+        playback.start();
     }
 
+    private class PlayBackThread extends Thread {
+
+        private boolean mShouldContinue = true;
+
+        @Override
+        public void run() {
+            int minBufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+            if (minBufferSize < sampleRate) {
+                minBufferSize = sampleRate;
+            }
+            AudioTrack at = new AudioTrack(AudioManager.STREAM_SYSTEM, sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT, minBufferSize, AudioTrack.MODE_STREAM);
+            String filepath = recording.getFileName();
+            File f = new File(recording.getFileName());
+            long length = f.length();
+
+            int i = 0;
+            byte[] s = new byte[minBufferSize * 2];
+            int dataPlayed = 0;
+            try {
+                FileInputStream fin = new FileInputStream(filepath);
+                DataInputStream dis = new DataInputStream(fin);
+                int skip = (int)(length * begin / 100.0);
+                if (skip % 2 == 1) {
+                    skip = skip - 1;
+                }
+                dis.skipBytes(skip);
+                int dataEnd = (int)(length * (end - begin) / 100.0);
+                System.out.println(dataEnd);
+                at.play();
+                mShouldContinue = true;
+                while(i > -1 && mShouldContinue){
+                    if (dataEnd < dataPlayed + minBufferSize) {
+                        i = dis.read(s, 0, dataEnd - dataPlayed);
+                        for (int j = i; j < minBufferSize; j++ ) {
+                            s[j] = 0;
+                        }
+                        mShouldContinue = false;
+                    } else {
+                        i = dis.read(s, 0, minBufferSize);
+                    }
+                    if (i > -1) {
+                        at.write(s, 0, minBufferSize);
+                        dataPlayed += i;
+                    }
+                }
+                at.write(s, 0, minBufferSize);
+
+                System.out.println(dataPlayed);
+                at.stop();
+                at.release();
+                dis.close();
+                fin.close();
+
+            } catch (FileNotFoundException e) {
+                // TODO
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO
+                e.printStackTrace();
+            }
+        }
+
+        /**
+         * Gets a value indicating whether the thread should continue running.
+         *
+         * @return true if the thread should continue running or false if it should stop
+         */
+        private synchronized boolean shouldContinue() {
+            return mShouldContinue;
+        }
+
+        /** Notifies the thread that it should stop running at the next opportunity. */
+        public synchronized void stopRunning() {
+            mShouldContinue = false;
+        }
+    }
 }

@@ -30,6 +30,7 @@ public class StaticLineWaveformView extends View {
     private double begin, end, progress;
     private long delay;
     private File file;
+    private double add;
 
     private final Paint mPaint;
 
@@ -71,15 +72,27 @@ public class StaticLineWaveformView extends View {
 
     public void startPlaying() {
         int sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM);
-        delay = (long)((double)fileLength * (end - begin) / sampleRate / 100.0);
-        System.out.println(delay);
+        System.out.println("file length" + fileLength);
+        System.out.println("sample Rate" + sampleRate);
+        delay = (long)fileLength * 5 / sampleRate;
+        add = 1;
+        if (delay < 100) {
+            add = 100.0 / delay;
+            delay = 100;
+        }
         progress = begin;
+        System.out.println("add" + add);
         Handler h = new Handler();
         h.postDelayed(new Runnable() {
             public void run() {
-                progress++;
+                progress += add;
                 invalidate();
-                postDelayed(this, delay);
+                if (progress < end) {
+                    System.out.println("delay " + delay);
+                    postDelayed(this, delay);
+                } else {
+                    progress = -1;
+                }
             }
         }, delay);
     }
