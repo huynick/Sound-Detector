@@ -11,6 +11,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -31,11 +32,13 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
     private RecordingListAdapter recordingListAdapter;
     private RecordingTableOpenHelper mDbHelper;
     private String soundName;
+    private boolean writing;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        writing = false;
         setContentView(R.layout.activity_recording_list);
         currRecordings = new ArrayList<Recording>();
 
@@ -175,6 +178,10 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
                 null,
                 values);
         recordingListAdapter.add(recording);
+        while (writing) {
+            Log.e("Writing", "still writing");
+        }
+        dialog.dismiss();
     }
 
     public void onDialogPositiveClick(DialogFragment dialog, int position) {
@@ -229,5 +236,19 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
         Intent i = new Intent(getApplicationContext(), MainScreen.class);
         startActivity(i);
         return true;
+    }
+
+    /*
+    Start writing to a file for a recording dialog
+     */
+    public void startWriting() {
+        writing = true;
+    }
+
+    /*
+    Ends writing to a file for a recording dialog
+     */
+    public void endWriting() {
+        writing = false;
     }
 }

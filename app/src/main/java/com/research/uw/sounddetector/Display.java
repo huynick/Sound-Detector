@@ -33,10 +33,12 @@ public class Display extends ActionBarActivity implements AddRecordingDialog.Add
     private int bufferSize, sampleRate, channelMode, encodingMode;
     private RecordingTableOpenHelper mDbHelper;
     private ArrayList<short[]> bufferList;
+    private boolean writing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        writing = false;
         setContentView(R.layout.activity_display);
 
         waveView = (WaveformView) findViewById(R.id.waveView);
@@ -120,6 +122,10 @@ public class Display extends ActionBarActivity implements AddRecordingDialog.Add
                 RecordingContract.RecordingEntry.TABLE_NAME,
                 null,
                 values);
+        while (writing) {
+            Log.e("Writing", "still writing");
+        }
+        dialog.dismiss();
         startRecording();
     }
 
@@ -266,5 +272,19 @@ public class Display extends ActionBarActivity implements AddRecordingDialog.Add
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // mId allows you to update the notification later on.
         mNotificationManager.notify(mId, mBuilder.build());
+    }
+
+    /*
+    Start writing to a file for a recording dialog
+     */
+    public void startWriting() {
+        writing = true;
+    }
+
+    /*
+    Ends writing to a file for a recording dialog
+     */
+    public void endWriting() {
+        writing = false;
     }
 }

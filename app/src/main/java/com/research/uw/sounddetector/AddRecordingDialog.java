@@ -66,6 +66,8 @@ public class AddRecordingDialog extends DialogFragment {
     public interface AddRecordingDialogListener {
         public void onDialogStopClick(DialogFragment dialog, Recording recording);
         public void onFinish(DialogFragment dialog);
+        public void startWriting();
+        public void endWriting();
     }
 
     public void setRecorder(AudioRecord record) {
@@ -187,7 +189,6 @@ public class AddRecordingDialog extends DialogFragment {
                         recording = new Recording(nameEditText.getText().toString(), mFileName, (String)soundTypes.getSelectedItem(), 0.0, 100.0);
                     }
                     mListener.onDialogStopClick(AddRecordingDialog.this, recording);
-                    dismiss();
                 }
             }
         });
@@ -223,6 +224,7 @@ public class AddRecordingDialog extends DialogFragment {
 
         @Override
         public void run() {
+            mListener.startWriting();
             android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);
 
             AudioRecord record = new AudioRecord(MediaRecorder.AudioSource.MIC, AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM),
@@ -281,6 +283,7 @@ public class AddRecordingDialog extends DialogFragment {
 
             record.stop();
             record.release();
+            mListener.endWriting();
             record = null;
             //loopback();
         }

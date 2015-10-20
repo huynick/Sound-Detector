@@ -54,9 +54,12 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     private int MAX_BUFFER_SIZE = 15;
     private short[] mAudioBuffer;
 
+    private boolean writing;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        writing = false;
         setContentView(R.layout.activity_main_screen);
         Switch listener = (Switch)findViewById(R.id.listenerSwitch);
         listener.setChecked(false);
@@ -421,6 +424,9 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                     tempRecording = finalRec;
                 }
             });
+            while (writing) {
+                Log.e("Writing", "still writing");
+            }
             AlertDialog uncatDialog = builder.create();
             uncatDialog.show();
         } else {
@@ -439,7 +445,25 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                     RecordingContract.RecordingEntry.TABLE_NAME,
                     null,
                     values);
+            while (writing) {
+                Log.e("Writing", "still writing");
+            }
+            dialog.dismiss();
         }
+    }
+
+    /*
+    Start writing to a file for a recording dialog
+     */
+    public void startWriting() {
+        writing = true;
+    }
+
+    /*
+    Ends writing to a file for a recording dialog
+     */
+    public void endWriting() {
+        writing = false;
     }
 }
 
