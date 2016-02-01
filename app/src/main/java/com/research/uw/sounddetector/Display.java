@@ -1,9 +1,11 @@
 package com.research.uw.sounddetector;
 
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -20,28 +22,50 @@ import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.SeekBar;
 
 import java.util.ArrayList;
 
-public class Display extends ActionBarActivity implements AddRecordingDialog.AddRecordingDialogListener {
+public class Display extends ActionBarActivity implements AddRecordingDialog.AddRecordingDialogListener, AddNewSoundTypeDialog.NoticeDialogListener {
 
     private WaveformView waveView;
     private AudioRecord recorder;
     private RecordingThread recordingThread;
+    private SeekBar seekBar;
     private final int MAX_BUFFER_SIZE = 15;
     private short[] mAudioBuffer;
     private int bufferSize, sampleRate, channelMode, encodingMode;
     private RecordingTableOpenHelper mDbHelper;
     private ArrayList<short[]> bufferList;
     private boolean writing;
+    private Recording tempRecording;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        tempRecording = null;
         writing = false;
         setContentView(R.layout.activity_display);
 
+        seekBar = (SeekBar) findViewById(R.id.sensitivityBar);
+        seekBar.setProgress(50);
         waveView = (WaveformView) findViewById(R.id.waveView);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                waveView.setSensitivity(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
         sampleRate = AudioTrack.getNativeOutputSampleRate(AudioManager.STREAM_SYSTEM);
         channelMode = AudioFormat.CHANNEL_IN_MONO;
         encodingMode = AudioFormat.ENCODING_PCM_16BIT;
@@ -52,6 +76,48 @@ public class Display extends ActionBarActivity implements AddRecordingDialog.Add
         mDbHelper = new RecordingTableOpenHelper(getBaseContext());
 
         startRecording();
+    }
+
+    public void onDialogPositiveClick(DialogFragment dialog, String name) {
+        addSoundType(name);
+    }
+
+    public void addSoundType(String name) {
+        // Gets the data repository in write mode
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        // Create a new map of values, where column names are the keys
+        ContentValues values = new ContentValues();
+
+        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE_NAME, name);
+        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE_IN_USE, 1);
+
+        long ret = db.insert(
+                RecordingContract.RecordingEntry.SOUND_TABLE_NAME,
+                null,
+                values);
+        Log.e("New sound type:", "name");
+        tempRecording.setSoundType(name);
+        // Gets the data repository in write mode
+
+        // Create a new map of values, where column names are the keys
+        ContentValues recordingValues = new ContentValues();
+        recordingValues.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME, tempRecording.getFileName());
+        recordingValues.put(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME, tempRecording.getName());
+        recordingValues.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE, tempRecording.getSoundType());
+        recordingValues.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_BEGINNING, 0.0);
+        recordingValues.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_END, 100.0);
+
+        db.insert(
+                RecordingContract.RecordingEntry.TABLE_NAME,
+                null,
+                recordingValues);
+    }
+
+    @Override
+    //Do nothing
+    public void onDialogNegativeClick(DialogFragment dialog) {
+
     }
 
     @Override
@@ -101,32 +167,64 @@ public class Display extends ActionBarActivity implements AddRecordingDialog.Add
     @Override
     public void onFinish(DialogFragment dialog) {
         startRecording();
-        Log.e("Hi", "Hi");
     }
 
     @Override
     public void onDialogStopClick(DialogFragment dialog, Recording recording) {
-        Log.e("resume", "stop");
-        // Gets the data repository in write mode
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        final Recording finalRec = recording;
+        Log.e("Recording sound name", recording.getSoundType());
+        if(recording.getSoundType().equals("Uncategorized")) {
+            Log.e("Uncategorized recording", "");
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setMessage("Would you like to add a new sound type for your uncategorized recording?").setNegativeButton("No", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // Gets the data repository in write mode
+                    SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
-        // Create a new map of values, where column names are the keys
-        ContentValues values = new ContentValues();
-        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME, recording.getFileName());
-        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME, recording.getName());
-        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE, recording.getSoundType());
-        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_BEGINNING, 0.0);
-        values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_END, 100.0);
+                    // Create a new map of values, where column names are the keys
+                    ContentValues values = new ContentValues();
+                    values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME, finalRec.getFileName());
+                    values.put(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME, finalRec.getName());
+                    values.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE, finalRec.getSoundType());
+                    values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_BEGINNING, 0.0);
+                    values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_END, 100.0);
 
-        db.insert(
-                RecordingContract.RecordingEntry.TABLE_NAME,
-                null,
-                values);
-        while (writing) {
-            Log.e("Writing", "still writing");
+                    db.insert(
+                            RecordingContract.RecordingEntry.TABLE_NAME,
+                            null,
+                            values);
+                }
+            }).setPositiveButton(("Yes"), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    AddNewSoundTypeDialog soundTypeDialog = new AddNewSoundTypeDialog();
+                    soundTypeDialog.show(getSupportFragmentManager(), "AddSoundType");
+                    tempRecording = finalRec;
+                }
+            });
+            while (writing) {
+                Log.e("Writing", "still writing");
+            }
+            AlertDialog uncatDialog = builder.create();
+            uncatDialog.show();
+            dialog.dismiss();
+        } else {
+            // Gets the data repository in write mode
+            SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+            // Create a new map of values, where column names are the keys
+            ContentValues values = new ContentValues();
+            values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME, recording.getFileName());
+            values.put(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME, recording.getName());
+            values.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE, recording.getSoundType());
+            values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_BEGINNING, 0.0);
+            values.put(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_END, 100.0);
+
+            db.insert(
+                    RecordingContract.RecordingEntry.TABLE_NAME,
+                    null,
+                    values);
+            dialog.dismiss();
         }
-        dialog.dismiss();
-        startRecording();
     }
 
     public void quickAddRecording(View view) {

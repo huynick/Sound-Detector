@@ -22,18 +22,31 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SoundTypeAdapter extends ArrayAdapter<SoundType> {
     private ArrayList<SoundType> soundTypes;
     private Context context;
     private FragmentManager fragmentManager;
     private RecordingTableOpenHelper db;
+    private Set<String> defaultSounds;
 
     public SoundTypeAdapter(Context context, int resource, ArrayList<SoundType> soundTypes, RecordingTableOpenHelper db, FragmentManager fragmentManager) {
         super(context, resource, soundTypes);
+        intializeDefaultSoundSet();
         this.soundTypes = soundTypes;
         this.fragmentManager = fragmentManager;
         this.db = db;
+    }
+
+    private  void intializeDefaultSoundSet() {
+        defaultSounds = new HashSet<String>();
+        defaultSounds.add("Uncategorized");
+        defaultSounds.add("Garbage Disposal");
+        defaultSounds.add("Microwave Beeping");
+        defaultSounds.add("Breaking Glass");
+        defaultSounds.add("Knocking on Door");
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -95,7 +108,7 @@ public class SoundTypeAdapter extends ArrayAdapter<SoundType> {
                 }
             });
         }
-        if(s.equals("Uncategorized")) {
+        if(defaultSounds.contains(s)) {
             delete.setVisibility(View.INVISIBLE);
         } else {
             delete.setVisibility(View.VISIBLE);

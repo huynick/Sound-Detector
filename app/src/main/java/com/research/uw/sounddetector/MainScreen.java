@@ -29,6 +29,7 @@ import com.parse.ParseInstallation;
 import com.parse.ParsePush;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 
 public class MainScreen extends ActionBarActivity implements AddRecordingDialog.AddRecordingDialogListener, AddNewSoundTypeDialog.NoticeDialogListener, DeleteSoundTypeDialog.DeleteRecordingDialogListener {
@@ -91,6 +92,10 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         soundTypeAdapter = new SoundTypeAdapter(this, android.R.layout.simple_list_item_1, soundTypeList, mDbHelper, getSupportFragmentManager());
         if(soundTypeAdapter.isEmpty()) {
             addSoundType("Uncategorized");
+            addSoundType("Garbage Disposal");
+            addSoundType("Microwave Beeping");
+            addSoundType("Breaking Glass");
+            addSoundType("Knocking on Door");
         }
 
         listView = (ListView) findViewById(R.id.soundTypeList);
@@ -110,6 +115,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     @Override
     protected void onResume() {
         super.onResume();
+        Log.e("Main Screen", "Resuming");
         updateSoundType();
         if (listening) {
             startRecording();
@@ -134,8 +140,16 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     }
 
     private void updateSoundType() {
-        soundTypeNames = new ArrayList<String>();
-        soundTypeList = new ArrayList<SoundType>();
+        if (soundTypeNames == null) {
+            soundTypeNames = new ArrayList<String>();
+        } else {
+            soundTypeNames.clear();
+        }
+        if (soundTypeList == null) {
+            soundTypeList = new ArrayList<SoundType>();
+        } else {
+            soundTypeList.clear();
+        }
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
         // Define a projection that specifies which columns from the database
@@ -179,6 +193,9 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
             }
             soundTypeList.add(sound);
         }
+        if (soundTypeAdapter != null) {
+            soundTypeAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -212,7 +229,9 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     @Override
     //Add the inputted sound type name to the list
     public void onDialogPositiveClick(DialogFragment dialog, String name) {
+
         addSoundType(name);
+        dialog.dismiss();
     }
 
     public void addSoundType(String name) {
@@ -257,7 +276,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     @Override
     //Do nothing
     public void onDialogNegativeClick(DialogFragment dialog) {
-
+        dialog.dismiss();
     }
 
     @Override
@@ -303,19 +322,8 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         }
     }
 
-    public void help(View view) {
-        HelpDialog dialog = new HelpDialog();
-        dialog.show(getSupportFragmentManager(), "HelpDialog");
-    }
-
-    public boolean help(MenuItem item) {
-        HelpDialog dialog = new HelpDialog();
-        dialog.show(getSupportFragmentManager(), "HelpDialog");
-        return true;
-    }
-
-    public boolean settingsMenu(MenuItem item) {
-        Intent i = new Intent(getApplicationContext(), SettingsScreen.class);
+    public boolean instructionsMenu(MenuItem item) {
+        Intent i = new Intent(getApplicationContext(), InstructionsScreen.class);
         startActivity(i);
         return true;
     }
@@ -398,7 +406,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         if(recording.getSoundType().equals("Uncategorized")) {
             Log.e("Uncategorized recording", "");
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Would you like to add a new sound type for your uncategorized recording?").setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            builder.setMessage("Would you like to add a new sound type for your uncategorized recording?").setNegativeButton("No", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int id) {
                     // Gets the data repository in write mode
                     SQLiteDatabase db = mDbHelper.getWritableDatabase();
@@ -429,6 +437,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
             }
             AlertDialog uncatDialog = builder.create();
             uncatDialog.show();
+            dialog.dismiss();
         } else {
             // Gets the data repository in write mode
             SQLiteDatabase db = mDbHelper.getWritableDatabase();

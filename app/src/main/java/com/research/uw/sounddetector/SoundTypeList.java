@@ -192,14 +192,8 @@ public class SoundTypeList extends ActionBarActivity implements AddNewSoundTypeD
         //Do Nothing
     }
 
-    public boolean help(MenuItem item) {
-        HelpDialog dialog = new HelpDialog();
-        dialog.show(getSupportFragmentManager(), "HelpDialog");
-        return true;
-    }
-
-    public boolean settingsMenu(MenuItem item) {
-        Intent i = new Intent(getApplicationContext(), SettingsScreen.class);
+    public boolean instructionsMenu(MenuItem item) {
+        Intent i = new Intent(getApplicationContext(), InstructionsScreen.class);
         startActivity(i);
         return true;
     }

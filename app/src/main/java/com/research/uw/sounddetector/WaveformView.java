@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceView;
 
 import java.util.LinkedList;
@@ -13,7 +14,7 @@ public class WaveformView extends SurfaceView {
 
     private static final int HISTORY_SIZE = 10;
 
-    private static final float MAX_HEIGHT_TO_DRAW = 4096.0f;
+    private float maxHeightToDraw = 80 * 50;
 
     private final LinkedList<short[]> audioHistory;
 
@@ -37,6 +38,10 @@ public class WaveformView extends SurfaceView {
         mPaint.setColor(Color.WHITE);
         mPaint.setStrokeWidth(0);
         mPaint.setAntiAlias(true);
+    }
+
+    public void setSensitivity(int progress) {
+        maxHeightToDraw = 80 * (101 - progress);
     }
 
     public synchronized void updateAudioData(short[] buffer) {
@@ -79,7 +84,7 @@ public class WaveformView extends SurfaceView {
             }
             sum = sum / buffer.length;
 
-            float y = (sum / MAX_HEIGHT_TO_DRAW) * height;
+            float y = (sum / maxHeightToDraw) * height;
             canvas.drawRect(lastX, height, index, height - (y + 10), mPaint);
             lastX = index + 10;
             count++;

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:id="@+id/SCROLLER_ID"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="vertical"
+        android:fillViewport="true">
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:text="Main Menu Instructions:\n\nThe Sound Detector detects types of sounds that you care about. To set up the app, follow the four steps below. Then you will receive notifications when those sounds happen!\n\n1. List the sound types you are interested in (ex: dog barking, door knock, or smoke alarm).\n2. Provide 5 or more recorded examples of each sound type.\n3. Select (check) the sound types you want the app to detect.\n4. Slide the listener from OFF to ON.\n\nClick  +  to add a sound type you are interested in.\n\nClick QUICK RECORD to quickly record an example of any sound type. You will be asked to select the sound type, name the example you are recording, and record the example.\n\nClick DISPLAY to view how much sound is around you right now.\n\nClick on a sound type to view and edit the examples you have recorded, or to provide new examples of that sound type.\n\nCheck the box to the left of a sound type to detect that sound type. Uncheck the box to ignore that sound.\n\nClick DELETE to remove a sound type completely, and all examples you recorded of it.\n\nSlide the LISTENER from OFF to ON to start listening for all selected (checked) sound types. Slide it from ON to OFF to stop listening for sounds.\n\n\nSound Type Instructions:\n\nProvide 5 (or more) recorded examples of this sound type so that the Sound Detector can recognize this sound. You can edit and delete examples you are not satisfied with.\n\nClick  +  to record an example of this sound type.\n\nClick EDIT to edit an example you recorded. You can view the soundwave, play the example, trim off parts of the recording that do not contain the sound, rename the example, or move the example to another sound type.\n\nClick DELETE to delete a bad example you recorded."
+            android:id="@+id/textView2"
+            android:layout_gravity="center_horizontal" />
+    </ScrollView>
+</LinearLayout>
