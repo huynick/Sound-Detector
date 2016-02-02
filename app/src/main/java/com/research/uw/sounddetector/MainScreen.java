@@ -11,6 +11,7 @@ import android.media.AudioManager;
 import android.media.AudioRecord;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
@@ -25,15 +26,30 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
 
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.exception.DropboxException;
+import com.dropbox.client2.session.AppKeyPair;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.parse.ParseInstallation;
 import com.parse.ParsePush;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Set;
 
 
 public class MainScreen extends ActionBarActivity implements AddRecordingDialog.AddRecordingDialogListener, AddNewSoundTypeDialog.NoticeDialogListener, DeleteSoundTypeDialog.DeleteRecordingDialogListener {
 
+    // For Dropbox
+    final static private String APP_KEY = "owz8xcak9sdvvsw";
+    final static private String APP_SECRET = "343f1aa8mk2cpn5";
+
+    private DropboxAPI<AndroidAuthSession> mDBApi;
     private AudioRecord recorder;
     private WaveformView waveView;
     private SurfaceHolder waveHolder;
@@ -56,13 +72,18 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     private short[] mAudioBuffer;
 
     private boolean writing;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         writing = false;
         setContentView(R.layout.activity_main_screen);
-        Switch listener = (Switch)findViewById(R.id.listenerSwitch);
+        Switch listener = (Switch) findViewById(R.id.listenerSwitch);
         listener.setChecked(false);
         listener.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -90,7 +111,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         updateSoundType();
 
         soundTypeAdapter = new SoundTypeAdapter(this, android.R.layout.simple_list_item_1, soundTypeList, mDbHelper, getSupportFragmentManager());
-        if(soundTypeAdapter.isEmpty()) {
+        if (soundTypeAdapter.isEmpty()) {
             addSoundType("Uncategorized");
             addSoundType("Garbage Disposal");
             addSoundType("Microwave Beeping");
@@ -109,12 +130,31 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                 startActivity(i);
             }
         });
+
+        // For Dropbox
+        AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
+        AndroidAuthSession session = new AndroidAuthSession(appKeys);
+        mDBApi = new DropboxAPI<AndroidAuthSession>(session);
+        mDBApi.getSession().startOAuth2Authentication(MainScreen.this);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     // You need to do the Play Services APK check here too.
     @Override
     protected void onResume() {
         super.onResume();
+        if (mDBApi.getSession().authenticationSuccessful()) {
+            try {
+                // Required to complete auth, sets the access token on the session
+                mDBApi.getSession().finishAuthentication();
+
+                String accessToken = mDBApi.getSession().getOAuth2AccessToken();
+            } catch (IllegalStateException e) {
+                Log.i("DbAuthLog", "Error authenticating", e);
+            }
+        }
         Log.e("Main Screen", "Resuming");
         updateSoundType();
         if (listening) {
@@ -169,24 +209,24 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                 null,                                     // don't filter by row groups
                 null                                 // The sort order
         );
-        if(c.moveToFirst()) {
+        if (c.moveToFirst()) {
             String s = c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE_NAME));
             soundTypeNames.add(s);
             int i = c.getInt(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE_IN_USE));
             SoundType sound;
-            if(i == 0) {
+            if (i == 0) {
                 sound = new SoundType(s, false);
             } else {
                 sound = new SoundType(s, true);
             }
             soundTypeList.add(sound);
         }
-        while(c.moveToNext()) {
+        while (c.moveToNext()) {
             String s = c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE_NAME));
             soundTypeNames.add(s);
             int i = c.getInt(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE_IN_USE));
             SoundType sound;
-            if(i == 0) {
+            if (i == 0) {
                 sound = new SoundType(s, false);
             } else {
                 sound = new SoundType(s, true);
@@ -219,6 +259,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         AddNewSoundTypeDialog dialog = new AddNewSoundTypeDialog();
         dialog.show(getSupportFragmentManager(), "AddSoundType");
     }
+
     @Override
     public void onFinish(DialogFragment dialog) {
         if (listening) {
@@ -248,7 +289,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                 RecordingContract.RecordingEntry.SOUND_TABLE_NAME,
                 null,
                 values);
-        if(ret != -1) {
+        if (ret != -1) {
             soundTypeAdapter.add(new SoundType(name, true));
         }
 
@@ -366,12 +407,12 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                 null                                 // The sort order
         );
         int min = 0;
-        if(c.moveToFirst()) {
+        if (c.moveToFirst()) {
             String currName = c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME));
-            if(currName.startsWith(soundName)) {
+            if (currName.startsWith(soundName)) {
                 try {
                     int currNum = Integer.parseInt(currName.substring(soundName.length() + 1));
-                    if(currNum > min) {
+                    if (currNum > min) {
                         min = currNum;
                     }
                 } catch (NumberFormatException e) {
@@ -381,12 +422,12 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                 }
             }
         }
-        while(c.moveToNext()) {
+        while (c.moveToNext()) {
             String currName = c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME));
-            if(currName.startsWith(soundName)) {
+            if (currName.startsWith(soundName)) {
                 try {
                     int currNum = Integer.parseInt(currName.substring(soundName.length() + 1));
-                    if(currNum > min) {
+                    if (currNum > min) {
                         min = currNum;
                     }
                 } catch (NumberFormatException e) {
@@ -402,8 +443,9 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
 
     public void onDialogStopClick(DialogFragment dialog, Recording recording) {
         final Recording finalRec = recording;
+
         Log.e("Recording sound name", recording.getSoundType());
-        if(recording.getSoundType().equals("Uncategorized")) {
+        if (recording.getSoundType().equals("Uncategorized")) {
             Log.e("Uncategorized recording", "");
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage("Would you like to add a new sound type for your uncategorized recording?").setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -432,7 +474,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                     tempRecording = finalRec;
                 }
             });
-            while (writing){
+            while (writing) {
 
             }
             AlertDialog uncatDialog = builder.create();
@@ -459,6 +501,25 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
             }
             dialog.dismiss();
         }
+        // Upload to Dropbox
+        final File file = new File(finalRec.getFileName());
+        Thread thread = new Thread(new Runnable(){
+            @Override
+            public void run() {
+                try {
+                    FileInputStream inputStream = new FileInputStream(file);
+                    DropboxAPI.Entry response = mDBApi.putFile(finalRec.getFileName(), inputStream,
+                            file.length(), null, null);
+                } catch (FileNotFoundException e) {
+                    Log.e("Upload to dropbox", "File not found");
+                } catch (DropboxException e) {
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
     }
 
     /*
@@ -473,6 +534,46 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
      */
     public void endWriting() {
         writing = false;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "MainScreen Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://com.research.uw.sounddetector/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "MainScreen Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://com.research.uw.sounddetector/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
     }
 }
 

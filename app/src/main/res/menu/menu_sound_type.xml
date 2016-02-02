@@ -4,7 +4,7 @@
     tools:context="com.research.uw.sounddetector.SoundTypeList">
     <item android:id="@+id/instructions"
         android:title="Instructions"
-        android:onClick="instructionsMenus"/>
+        android:onClick="instructionsMenu"/>
     <item android:id="@+id/mainMenu"
         android:title="Main Menu"
         android:onClick="mainMenu"/>
