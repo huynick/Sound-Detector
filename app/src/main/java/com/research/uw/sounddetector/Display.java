@@ -202,7 +202,7 @@ public class Display extends ActionBarActivity implements AddRecordingDialog.Add
                 }
             });
             while (writing) {
-                Log.e("Writing", "still writing");
+
             }
             AlertDialog uncatDialog = builder.create();
             uncatDialog.show();

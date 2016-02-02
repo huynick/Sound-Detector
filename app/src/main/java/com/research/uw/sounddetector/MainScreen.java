@@ -432,8 +432,8 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                     tempRecording = finalRec;
                 }
             });
-            while (writing) {
-                Log.e("Writing", "still writing");
+            while (writing){
+
             }
             AlertDialog uncatDialog = builder.create();
             uncatDialog.show();
