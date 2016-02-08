@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioFormat;
@@ -70,6 +71,8 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     private ArrayList<short[]> bufferList;
     private int MAX_BUFFER_SIZE = 15;
     private short[] mAudioBuffer;
+    private int userCount;
+    SharedPreferences settings;
 
     private boolean writing;
     /**
@@ -130,6 +133,9 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                 startActivity(i);
             }
         });
+
+        settings = getPreferences(MODE_PRIVATE);
+        userCount = settings.getInt("user count", 0);
 
         // For Dropbox
         AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
@@ -274,6 +280,53 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         addSoundType(name);
         dialog.dismiss();
     }
+
+    public void reset(MenuItem item) {
+        userCount++;
+        settings.edit().putInt("user count", userCount);
+
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        String[] projection = {
+                RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME
+        };
+
+        Cursor c = db.query(
+                RecordingContract.RecordingEntry.TABLE_NAME,  // The table to query
+                projection,                               // The columns to return
+                null,                                // The columns for the WHERE clause
+                null,                            // The values for the WHERE clause
+                null,                                     // don't group the rows
+                null,                                     // don't filter by row groups
+                null                                 // The sort order
+        );
+        if (c.moveToFirst()) {
+            String s = c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME));
+            File f = new File(s);
+            if (f.delete()) {
+                Log.e("Successfully deleted", s);
+            }
+        }
+        while (c.moveToNext()) {
+            String s = c.getString(c.getColumnIndex(RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME));
+            File f = new File(s);
+            if (f.delete()) {
+                Log.e("Successfully deleted", s);
+            }
+        }
+        db.delete(RecordingContract.RecordingEntry.SOUND_TABLE_NAME, null, null);
+        db.delete(RecordingContract.RecordingEntry.TABLE_NAME, null, null);
+
+        soundTypeAdapter = new SoundTypeAdapter(this, android.R.layout.simple_list_item_1, soundTypeList, mDbHelper, getSupportFragmentManager());
+        if (soundTypeAdapter.isEmpty()) {
+            addSoundType("Uncategorized");
+            addSoundType("Garbage Disposal");
+            addSoundType("Microwave Beeping");
+            addSoundType("Breaking Glass");
+            addSoundType("Knocking on Door");
+        }
+        updateSoundType();
+    }
+
 
     public void addSoundType(String name) {
         // Gets the data repository in write mode
@@ -508,7 +561,7 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
             public void run() {
                 try {
                     FileInputStream inputStream = new FileInputStream(file);
-                    DropboxAPI.Entry response = mDBApi.putFile(finalRec.getFileName(), inputStream,
+                    DropboxAPI.Entry response = mDBApi.putFile(userCount + finalRec.getFileName(), inputStream,
                             file.length(), null, null);
                 } catch (FileNotFoundException e) {
                     Log.e("Upload to dropbox", "File not found");
