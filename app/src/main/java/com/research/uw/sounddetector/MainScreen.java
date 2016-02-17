@@ -2,6 +2,7 @@ package com.research.uw.sounddetector;
 
 import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +15,7 @@ import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
@@ -40,7 +42,9 @@ import com.parse.ParsePush;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Set;
 
 
@@ -134,17 +138,38 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
             }
         });
 
-        settings = getPreferences(MODE_PRIVATE);
+        settings = getSharedPreferences("User count", MODE_PRIVATE);
         userCount = settings.getInt("user count", 0);
+        settings = getSharedPreferences("Access Token", MODE_PRIVATE);
 
         // For Dropbox
+        String accessToken = settings.getString("Access Token", "Not found");
+        Log.e("access Token 1", accessToken);
         AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
-        AndroidAuthSession session = new AndroidAuthSession(appKeys);
+        AndroidAuthSession session = null;
+        if (accessToken.equals("Not found")) {
+            session = new AndroidAuthSession(appKeys);
+        } else {
+            session = new AndroidAuthSession(appKeys, accessToken);
+        }
         mDBApi = new DropboxAPI<AndroidAuthSession>(session);
-        mDBApi.getSession().startOAuth2Authentication(MainScreen.this);
+        if (accessToken.equals("Not found")) {
+            mDBApi.getSession().startOAuth2Authentication(MainScreen.this);
+        }
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/log.txt");
+        if (file.length() == 0) {
+            try {
+                RandomAccessFile raf = new RandomAccessFile(file, "rw");
+                String content = "Log file start \r\n";
+                raf.writeBytes(content);
+            } catch (Exception e){
+                Log.e("Initial log start", "File not found or error writing");
+            }
+        }
     }
 
     // You need to do the Play Services APK check here too.
@@ -157,6 +182,8 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
                 mDBApi.getSession().finishAuthentication();
 
                 String accessToken = mDBApi.getSession().getOAuth2AccessToken();
+                settings = getSharedPreferences("Access Token", MODE_PRIVATE);
+                settings.edit().putString("Access Token", accessToken).commit();
             } catch (IllegalStateException e) {
                 Log.i("DbAuthLog", "Error authenticating", e);
             }
@@ -283,7 +310,8 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
 
     public void reset(MenuItem item) {
         userCount++;
-        settings.edit().putInt("user count", userCount);
+        settings = getSharedPreferences("User count", MODE_PRIVATE);
+        settings.edit().putInt("user count", userCount).commit();
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         String[] projection = {
@@ -317,14 +345,39 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
         db.delete(RecordingContract.RecordingEntry.TABLE_NAME, null, null);
 
         soundTypeAdapter = new SoundTypeAdapter(this, android.R.layout.simple_list_item_1, soundTypeList, mDbHelper, getSupportFragmentManager());
-        if (soundTypeAdapter.isEmpty()) {
-            addSoundType("Uncategorized");
-            addSoundType("Garbage Disposal");
-            addSoundType("Microwave Beeping");
-            addSoundType("Breaking Glass");
-            addSoundType("Knocking on Door");
-        }
+        soundTypeAdapter.clear();
+        addSoundType("Uncategorized");
+        addSoundType("Garbage Disposal");
+        addSoundType("Microwave Beeping");
+        addSoundType("Breaking Glass");
+        addSoundType("Knocking on Door");
         updateSoundType();
+
+        Thread thread = new Thread(new Runnable(){
+            @Override
+            public void run() {
+                RandomAccessFile raf = null;
+                File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/log.txt");
+                SharedPreferences settings = getSharedPreferences("User count", Context.MODE_PRIVATE);
+                int userCount = settings.getInt("user count", 0);
+                try {
+                    FileInputStream inputStream = new FileInputStream(file);
+                    DropboxAPI.Entry response = mDBApi.putFile(userCount + "/log.txt" , inputStream,
+                            file.length(), null, null);
+                    file.delete();
+                    raf = new RandomAccessFile(file, "rw");
+                    String content = "Log file start \r\n";
+                    raf.writeBytes(content);
+                } catch (FileNotFoundException e) {
+                    Log.e("Upload to dropbox", "File not found");
+                } catch (DropboxException e) {
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        thread.start();
     }
 
 

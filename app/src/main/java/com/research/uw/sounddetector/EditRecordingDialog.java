@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.AudioFormat;
@@ -12,6 +14,7 @@ import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.DialogFragment;
 import android.util.Log;
@@ -24,12 +27,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.exception.DropboxException;
+import com.dropbox.client2.session.AppKeyPair;
+
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -37,6 +48,11 @@ import java.io.DataInputStream;
 import java.util.Scanner;
 
 public class EditRecordingDialog extends DialogFragment {
+    // For Dropbox
+    final static private String APP_KEY = "owz8xcak9sdvvsw";
+    final static private String APP_SECRET = "343f1aa8mk2cpn5";
+
+    private DropboxAPI<AndroidAuthSession> mDBApi;
     private Recording recording;
     private ArrayList<String> soundTypeList;
     private Spinner soundTypes;
@@ -102,6 +118,11 @@ public class EditRecordingDialog extends DialogFragment {
         waveform.updateAudioData(filepath);
         waveform.updateBeginAndEnd(recording.getStart(), recording.getEnd());
         SQLiteDatabase db = dbHelper.getReadableDatabase();
+        SharedPreferences settings = getActivity().getSharedPreferences("Access Token", Activity.MODE_PRIVATE);
+        String accessToken = settings.getString("Access Token", "Not found");
+        AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
+        AndroidAuthSession session = new AndroidAuthSession(appKeys, accessToken);
+        mDBApi = new DropboxAPI<AndroidAuthSession>(session);
 
         //Instantiate Seekbar
         RangeSeekBar<Double> seekBar = new RangeSeekBar<Double>(0.0, 100.0, this.getActivity().getBaseContext());
@@ -190,6 +211,21 @@ public class EditRecordingDialog extends DialogFragment {
                 String selection = RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME + " = ? AND " +
                         RecordingContract.RecordingEntry.COLUMN_NAME_FILE_NAME + " = ?";
                 String[] selectionArgs = { recording.getName(), recording.getFileName() };
+
+                final String filename = Environment.getExternalStorageDirectory().getAbsolutePath() + "/log.txt";
+                RandomAccessFile raf = null;
+                String content = "Recording named: " + recording.getName() + " under Sound Type: "
+                            + recording.getSoundType() + " Begin: " + begin + "End: " + end + "\r\n";
+                try {
+                    File f = new File(filename);
+                    raf = new RandomAccessFile(new File(filename), "rw");
+                    if (f.length() > 0) {
+                        raf.seek(f.length());
+                    }
+                    raf.writeBytes(content);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 int count = writeDb.update(
                         RecordingContract.RecordingEntry.TABLE_NAME,

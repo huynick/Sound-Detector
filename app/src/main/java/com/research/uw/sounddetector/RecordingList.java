@@ -5,8 +5,10 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -20,7 +22,16 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.exception.DropboxException;
+import com.dropbox.client2.session.AppKeyPair;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +44,11 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
     private RecordingTableOpenHelper mDbHelper;
     private String soundName;
     private boolean writing;
+    // For Dropbox
+    final static private String APP_KEY = "owz8xcak9sdvvsw";
+    final static private String APP_SECRET = "343f1aa8mk2cpn5";
+
+    private DropboxAPI<AndroidAuthSession> mDBApi;
 
 
     @Override
@@ -59,6 +75,9 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
         recordingListAdapter = new RecordingListAdapter(this, android.R.layout.simple_list_item_1, currRecordings, mDbHelper, getSupportFragmentManager());
         listView.setAdapter(recordingListAdapter);
         updateCurrRecordings();
+        AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
+        AndroidAuthSession session = new AndroidAuthSession(appKeys);
+        mDBApi = new DropboxAPI<AndroidAuthSession>(session);
 
         //Instantiate Action Bar
         // Set a toolbar to replace the action bar.
@@ -186,7 +205,7 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
 
     public void onDialogPositiveClick(DialogFragment dialog, int position) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        Recording r = currRecordings.get(position);
+        final Recording r = currRecordings.get(position);
         // Define 'where' part of query.
         String selection = RecordingContract.RecordingEntry.COLUMN_NAME_RECORDING_NAME + " = ?" +
                 "AND " + RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE + " = ?";
@@ -194,6 +213,19 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
         String[] selectionArgs = {r.getName(), r.getSoundType() };
         db.delete(RecordingContract.RecordingEntry.TABLE_NAME, selection, selectionArgs);
         recordingListAdapter.remove(currRecordings.get(position));
+        final String filename = Environment.getExternalStorageDirectory().getAbsolutePath() + "/log.txt";
+        RandomAccessFile raf = null;
+        String content = "File named " + r.getName() + " has been deleted \r\n";
+        try {
+            File f = new File(filename);
+            raf = new RandomAccessFile(new File(filename), "rw");
+            if (f.length() > 0) {
+                raf.seek(f.length());
+            }
+            raf.writeBytes(content);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     public void onDialogNegativeClick(DialogFragment dialog) {
 
