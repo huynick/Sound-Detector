@@ -12,7 +12,7 @@ import android.view.SurfaceView;
 
 import java.util.LinkedList;
 
-public class LineWaveformView extends SurfaceView {
+public class LineWaveformView extends SurfaceView implements SurfaceHolder.Callback {
 
     private static final int HISTORY_SIZE = 1;
 
@@ -43,6 +43,20 @@ public class LineWaveformView extends SurfaceView {
         mPaint.setStrokeWidth(0);
         mPaint.setAntiAlias(true);
         toDraw = false;
+    }
+
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    public void surfaceCreated(SurfaceHolder holder) {
+        Canvas canvas = holder.lockCanvas();
+        canvas.drawColor(Color.BLACK);
+        Log.e("hello", "ayy");
+    }
+
+    public void surfaceDestroyed(SurfaceHolder holder) {
+
     }
 
     public synchronized void updateAudioData(short[] buffer) {
