@@ -98,6 +98,7 @@ public class SoundTypeAdapter extends ArrayAdapter<SoundType> {
                         String selection = RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE_NAME + " = ?";
                         // Specify arguments in placeholder order.
                         String[] selectionArgs = {s};
+                        soundType.setInUse(true);
                         ContentValues cv = new ContentValues();
                         cv.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE_IN_USE, 1);
                         writeDb.update(RecordingContract.RecordingEntry.SOUND_TABLE_NAME, cv, selection, selectionArgs);
@@ -107,6 +108,7 @@ public class SoundTypeAdapter extends ArrayAdapter<SoundType> {
                         String selection = RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE_NAME + " = ?";
                         // Specify arguments in placeholder order.
                         String[] selectionArgs = {s};
+                        soundType.setInUse(false);
                         ContentValues cv = new ContentValues();
                         cv.put(RecordingContract.RecordingEntry.COLUMN_NAME_SOUND_TYPE_IN_USE, 0);
                         writeDb.update(RecordingContract.RecordingEntry.SOUND_TABLE_NAME, cv, selection, selectionArgs);
