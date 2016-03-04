@@ -68,7 +68,8 @@
             android:layout_alignParentEnd="true"
             android:layout_below="@+id/nameEditText"
             android:paddingLeft="10dp"
-            android:paddingRight="10dp" />
+            android:paddingRight="10dp"
+            android:background="#000000" />
 
         <ToggleButton
             android:layout_width="wrap_content"
