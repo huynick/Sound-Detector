@@ -10,7 +10,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -62,15 +61,9 @@ public class SoundTypeAdapter extends ArrayAdapter<SoundType> {
         final String s = soundTypes.get(position).getName();
         if(soundType != null) {
             TextView soundTypeName = (TextView) v.findViewById(R.id.soundTypeName);
-            soundTypeName.setMaxLines(5);
-            soundTypeName.setEllipsize(TextUtils.TruncateAt.END);
-            soundTypeName.setHorizontallyScrolling(true);
             soundTypeName.setText(s);
         } else {
             TextView soundTypeName = (TextView) v.findViewById(R.id.soundTypeName);
-            soundTypeName.setMaxLines(5);
-            soundTypeName.setEllipsize(TextUtils.TruncateAt.END);
-            soundTypeName.setHorizontallyScrolling(true);
             soundTypeName.setText(s);
         }
 

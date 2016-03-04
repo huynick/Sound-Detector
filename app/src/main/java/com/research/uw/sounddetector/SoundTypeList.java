@@ -2,14 +2,12 @@ package com.research.uw.sounddetector;
 
 import android.content.ContentValues;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,10 +15,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
-
-import com.dropbox.client2.DropboxAPI;
-import com.dropbox.client2.android.AndroidAuthSession;
-import com.dropbox.client2.session.AppKeyPair;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -171,6 +165,7 @@ public class SoundTypeList extends ActionBarActivity implements AddNewSoundTypeD
         if(ret != -1) {
             soundTypeAdapter.add(new SoundType(name, true));
         }
+        //TODO: sort this
     }
 
     @Override

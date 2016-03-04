@@ -9,7 +9,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -46,15 +45,9 @@ public class RecordingListAdapter extends ArrayAdapter<Recording> {
         if(r != null) {
             TextView recordingName = (TextView) v.findViewById(R.id.recordingName);
             recordingName.setText(r.getName());
-            recordingName.setMaxLines(5);
-            recordingName.setEllipsize(TextUtils.TruncateAt.END);
-            recordingName.setHorizontallyScrolling(false);
         } else {
             TextView recordingName = (TextView) v.findViewById(R.id.recordingName);
             recordingName.setText("null");
-            recordingName.setMaxLines(5);
-            recordingName.setEllipsize(TextUtils.TruncateAt.END);
-            recordingName.setHorizontallyScrolling(false);
         }
         Button edit = (Button)v.findViewById(R.id.edit);
         edit.setOnClickListener(new View.OnClickListener() {

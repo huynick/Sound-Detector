@@ -457,6 +457,16 @@ public class MainScreen extends ActionBarActivity implements AddRecordingDialog.
     }
 
     public void listenerOn(View view) {
+        Switch listenerSwitch = (Switch) findViewById(R.id.listenerSwitch);
+        if (listenerSwitch.isChecked()) {
+            listenerSwitch.setText("ON");
+            listening = true;
+            startRecording();
+        } else {
+            listenerSwitch.setText("OFF");
+            listening = false;
+            stopRecording();
+        }
     }
 
     public boolean instructionsMenu(MenuItem item) {

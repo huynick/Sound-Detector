@@ -44,9 +44,6 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
     private RecordingTableOpenHelper mDbHelper;
     private String soundName;
     private boolean writing;
-    private int userCount;
-    SharedPreferences settings;
-
     // For Dropbox
     final static private String APP_KEY = "owz8xcak9sdvvsw";
     final static private String APP_SECRET = "343f1aa8mk2cpn5";
@@ -78,24 +75,9 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
         recordingListAdapter = new RecordingListAdapter(this, android.R.layout.simple_list_item_1, currRecordings, mDbHelper, getSupportFragmentManager());
         listView.setAdapter(recordingListAdapter);
         updateCurrRecordings();
-        settings = getSharedPreferences("User count", MODE_PRIVATE);
-        userCount = settings.getInt("user count", 0);
-        settings = getSharedPreferences("Access Token", MODE_PRIVATE);
-
-        // For Dropbox
-        String accessToken = settings.getString("Access Token", "Not found");
-        Log.e("access Token 1", accessToken);
         AppKeyPair appKeys = new AppKeyPair(APP_KEY, APP_SECRET);
-        AndroidAuthSession session = null;
-        if (accessToken.equals("Not found")) {
-            session = new AndroidAuthSession(appKeys);
-        } else {
-            session = new AndroidAuthSession(appKeys, accessToken);
-        }
+        AndroidAuthSession session = new AndroidAuthSession(appKeys);
         mDBApi = new DropboxAPI<AndroidAuthSession>(session);
-        if (accessToken.equals("Not found")) {
-            mDBApi.getSession().startOAuth2Authentication(RecordingList.this);
-        }
 
         //Instantiate Action Bar
         // Set a toolbar to replace the action bar.
@@ -107,18 +89,6 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
     @Override
     public void onResume() {
         super.onResume();
-        if (mDBApi.getSession().authenticationSuccessful()) {
-            try {
-                // Required to complete auth, sets the access token on the session
-                mDBApi.getSession().finishAuthentication();
-
-                String accessToken = mDBApi.getSession().getOAuth2AccessToken();
-                settings = getSharedPreferences("Access Token", MODE_PRIVATE);
-                settings.edit().putString("Access Token", accessToken).commit();
-            } catch (IllegalStateException e) {
-                Log.i("DbAuthLog", "Error authenticating", e);
-            }
-        }
         updateCurrRecordings();
     }
 
@@ -230,26 +200,6 @@ public class RecordingList extends ActionBarActivity implements AddRecordingDial
         while (writing) {
             Log.e("Writing", "still writing");
         }
-        // Upload to Dropbox
-        final Recording finalRec = recording;
-        final File file = new File(recording.getFileName());
-        Thread thread = new Thread(new Runnable(){
-            @Override
-            public void run() {
-                try {
-                    FileInputStream inputStream = new FileInputStream(file);
-                    DropboxAPI.Entry response = mDBApi.putFile(userCount + finalRec.getFileName(), inputStream,
-                            file.length(), null, null);
-                } catch (FileNotFoundException e) {
-                    Log.e("Upload to dropbox", "File not found");
-                } catch (DropboxException e) {
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        thread.start();
         dialog.dismiss();
     }
 
